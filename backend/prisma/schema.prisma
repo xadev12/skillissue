@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(uuid())
+  walletAddress   String    @unique
+  privyUserId     String?   @unique
+  username        String?
+  userType        UserType  @default(HUMAN)
+  reputationScore Float     @default(0)
+  
+  // Stats
+  jobsPosted      Int       @default(0)
+  jobsCompleted   Int       @default(0)
+  totalEarned     Float     @default(0)
+  totalSpent      Float     @default(0)
+  disputeWins     Int       @default(0)
+  disputeLosses   Int       @default(0)
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  postedJobs      Job[]     @relation("JobPoster")
+  acceptedJobs    Job[]     @relation("JobWorker")
+  jurorVotes      JurorVote[]
+  
+  @@index([walletAddress])
+  @@index([reputationScore])
+}
+
+model Job {
+  id                String      @id @default(uuid())
+  
+  // Relations
+  posterId          String
+  poster            User        @relation("JobPoster", fields: [posterId], references: [id])
+  workerId          String?
+  worker            User?       @relation("JobWorker", fields: [workerId], references: [id])
+  
+  // Job details
+  title             String
+  description       String
+  budget            Float       // USDC amount
+  status            JobStatus   @default(OPEN)
+  
+  // Timing
+  createdAt         DateTime    @default(now())
+  deadline          DateTime
+  completedAt       DateTime?
+  
+  // Categories
+  category          JobCategory @default(OTHER)
+  proofType         ProofType   @default(MANUAL)
+  
+  // For physical jobs
+  locationLat       Float?
+  locationLng       Float?
+  locationRadius    Int?        // meters
+  
+  // Squads escrow
+  squadsVaultAddress String?
+  
+  // Work submission
+  deliverableUrl    String?
+  deliverableHash   String?
+  proofData         Json?       // EXIF data, test results, etc.
+  
+  // Relations
+  dispute           Dispute?
+  jurorVotes        JurorVote[]
+  
+  @@index([status])
+  @@index([posterId])
+  @@index([workerId])
+  @@index([category])
+}
+
+model Dispute {
+  id            String        @id @default(uuid())
+  jobId         String        @unique
+  job           Job           @relation(fields: [jobId], references: [id])
+  
+  status        DisputeStatus @default(OPEN)
+  initiatedBy   String        // wallet address
+  
+  // Voting
+  commitDeadline DateTime?
+  revealDeadline DateTime?
+  
+  // Result
+  winnerAddress  String?       // who won the dispute
+  resolution     String?       // explanation
+  resolvedAt     DateTime?
+  
+  // Jurors
+  jurorVotes    JurorVote[]
+  
+  createdAt     DateTime      @default(now())
+  
+  @@index([status])
+}
+
+model JurorVote {
+  id          String    @id @default(uuid())
+  
+  disputeId   String
+  dispute     Dispute   @relation(fields: [disputeId], references: [id])
+  
+  jobId       String
+  job         Job       @relation(fields: [jobId], references: [id])
+  
+  jurorId     String
+  juror       User      @relation(fields: [jurorId], references: [id])
+  
+  // Commit-reveal
+  commitHash  String?   // hashed vote
+  vote        String?   // 'poster' | 'worker' | 'split' (revealed)
+  stakeAmount Float     @default(10) // USDC
+  
+  // Result
+  isWinner    Boolean?
+  reward      Float?    // USDC reward for correct vote
+  
+  createdAt   DateTime  @default(now())
+  revealedAt  DateTime?
+  
+  @@unique([disputeId, jurorId])
+}
+
+enum UserType {
+  HUMAN
+  AGENT
+}
+
+enum JobStatus {
+  OPEN
+  LOCKED
+  SUBMITTED
+  COMPLETED
+  DISPUTED
+  REFUNDED
+  EXPIRED
+}
+
+enum JobCategory {
+  CODE
+  DESIGN
+  CONTENT
+  DATA
+  VERIFICATION
+  OTHER
+}
+
+enum ProofType {
+  MANUAL
+  CODE
+  CONTENT
+  PHYSICAL
+}
+
+enum DisputeStatus {
+  OPEN
+  COMMIT
+  REVEAL
+  RESOLVED
+}
