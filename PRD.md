@@ -1,9 +1,16 @@
+---
+date_created: 2026-02-05
+tags: [project, solana, hackathon, agent-marketplace]
+type: project-spec
+status: active
+---
+
 # SkillIssue — PRD
 ## Agent-to-Agent, Human-to-Agent, Agent-to-Human Job Marketplace on Solana
 
-**Hackathon:** Colosseum Agent Hackathon  
-**Deadline:** February 12, 2026 (5PM UTC)  
-**Payment Token:** USDC (Mainnet)  
+**Hackathon:** Colosseum Agent Hackathon
+**Deadline:** February 12, 2026 (5PM UTC)
+**Payment Token:** USDC (Mainnet)
 **Future:** SOL support, then native SKILL token
 
 ---
@@ -12,6 +19,19 @@
 
 ### North Star
 > "The universal job layer for the agent economy — where any intelligence (human or AI) can discover, execute, and earn from work, verified on-chain."
+
+### Why Now
+
+The timing is uniquely right. [[MCP]] (Model Context Protocol) is becoming the standard for agent tool-use, meaning agents can natively call external services. [[Claude]], [[GPT-4]], and open-source models now have reliable function-calling, making autonomous job execution viable. On the infrastructure side, [[Solana]] Actions and Blinks reduce wallet UX friction to a single click. Agent frameworks like [[Eliza]] and [[CrewAI]] are proliferating — but they all lack an economic coordination layer. Every agent can talk, plan, and execute, yet none can trustlessly hire, pay, or dispute. SkillIssue fills that gap: a permissionless labor protocol that treats agents as first-class economic actors.
+
+### Why "SkillIssue"
+
+The name is a double entendre — and a thesis statement:
+
+- **Gaming origin:** "Skill issue" = the taunt you throw when someone loses. "You died? Skill issue."
+- **Agent economy meaning:** An agent's quality is literally determined by its `skills.md` / tool configuration. The difference between a 10x agent and a useless one is the skill file. It's always a skill issue.
+- **Economic thesis:** It's cheaper to pay 5 USDC for a proven agent with a battle-tested UI/frontend skill than to let a bad agent burn 50 USDC in tokens producing garbage. SkillIssue is the marketplace where skill quality gets priced, traded, and verified.
+- **Hackathon pun:** "Skill issue" is what you say when someone loses — here it's what you solve. The marketplace turns your skill issue into someone else's income.
 
 ### Problem Statement
 - Agents are proliferating but lack a standardized way to offer/accept work
@@ -37,11 +57,27 @@
 
 ---
 
+## 1.5 Competitive Landscape
+
+### Existing Agent Coordination Projects
+
+**[[Autonolas]] (OLAS):** Builds autonomous agent services with a focus on multi-agent coordination. Agents are co-owned via NFT-based service registries. Strong on agent-to-agent orchestration but closed-loop — agents only work within the Autonolas framework, and there's no marketplace for ad-hoc jobs or human participation. No escrow or dispute layer.
+
+**[[Fetch.ai]] (FET):** Decentralized agent economy with a focus on IoT and data sharing. Agents register capabilities on a search-and-discovery network. The protocol handles agent communication but delegates payment to bilateral negotiation — no standardized escrow, verification, or reputation. Primarily agent-to-agent; human involvement is an afterthought.
+
+**[[Morpheus]] (MOR):** Decentralized AI compute marketplace. Users pay to access AI models and agents earn by providing inference. It's a compute marketplace, not a labor marketplace — no concept of jobs, deliverables, deadlines, or verification. One-directional (human pays agent for inference).
+
+### Why SkillIssue Is Different
+
+The key differentiator is the **three-way marketplace**: A2A + H2A + A2H. Every existing project handles at most one direction (usually human → agent or agent → agent). SkillIssue treats agents and humans as interchangeable economic actors — any participant can post or accept any job. Combined with on-chain escrow, programmatic verification, and cross-party reputation, this creates the first general-purpose labor protocol where an agent can hire a human just as easily as a human can hire an agent. On the physical verification side, the [[Seeker]] phone's TEEPIN hardware attestation gives SkillIssue a Solana-native advantage no competitor can replicate — cryptographic proof that real-world photos are authentic, taken on an untampered device, with 150K+ units already shipped.
+
+---
+
 ## 2. User Personas
 
 ### Persona A: Agent (Autonomous AI)
-**Name:** Kato-7  
-**Type:** Research agent  
+**Name:** Kato-7
+**Type:** Research agent
 **Needs:**
 - Post data analysis jobs to other agents
 - Accept coding tasks from humans
@@ -51,8 +87,8 @@
 **Access Method:** SkillIssue SDK installed as a skill
 
 ### Persona B: Human Consumer
-**Name:** Xavier  
-**Type:** Solana ecosystem participant  
+**Name:** Kenji
+**Type:** Solana ecosystem participant
 **Needs:**
 - Post jobs for agents (research, analysis, code)
 - Verify agent work quality
@@ -61,8 +97,8 @@
 **Access Method:** Web interface
 
 ### Persona C: Human Service Provider
-**Name:** Sarah  
-**Type:** Designer, photographer, researcher  
+**Name:** Sarah
+**Type:** Designer, photographer, researcher
 **Needs:**
 - Accept real-world tasks from agents (take photos, verify locations)
 - Get paid instantly on task completion
@@ -74,41 +110,45 @@
 
 ## 3. Use Cases
 
-### Agent → Agent (A2A)
-| # | Use Case | Description |
-|---|----------|-------------|
-| 1 | **Data Pipeline** | Agent A needs on-chain data parsed; Agent B specializes in Helius/SolanaFM queries |
-| 2 | **Code Review** | Agent A writes Solana program; Agent B audits for vulnerabilities |
-| 3 | **Cross-Chain Research** | Agent A monitors Ethereum; Agent B monitors Solana; swap intel |
-| 4 | **Content Generation** | Agent A needs Twitter thread written; Agent B generates viral content |
-| 5 | **Translation** | Agent A needs docs translated to Chinese; Agent B is multilingual LLM |
-| 6 | **Model Fine-Tuning** | Agent A has dataset; Agent B runs training job on GPU cluster |
-| 7 | **Data Verification** | Agent A scrapes data; Agent B verifies accuracy against sources |
-| 8 | **Smart Contract Automation** | Agent A monitors DAO; Agent B executes proposals when conditions met |
+### Agent → Agent (A2A) — Hero: Skill File Optimization
 
-### Human → Agent (H2A)
-| # | Use Case | Description |
-|---|----------|-------------|
-| 1 | **Wallet Analysis** | Human wants full portfolio breakdown across Solana protocols |
-| 2 | **Alpha Research** | Human wants curated list of upcoming Solana projects with risk analysis |
-| 3 | **Smart Contract Explain** | Human deploys program, wants plain-English explanation |
-| 4 | **Twitter Thread** | Human has idea, wants agent to research and write thread |
-| 5 | **Tokenomics Review** | Human launching token, wants agent to model emission schedule |
-| 6 | **On-Chain Forensics** | Human suspects wallet of wash trading, wants investigation |
-| 7 | **Documentation** | Human needs API docs written for new Solana program |
-| 8 | **Data Export** | Human wants all NFT trades for 2025 exported to CSV |
+**Scenario:** Agent A is a full-stack builder agent. Its frontend output is mediocre — generic layouts, poor component choices, inconsistent styling. The root cause isn't the model — it's the `skills.md`. Agent A's skill file has vague instructions like "build nice UIs."
 
-### Agent → Human (A2H)
-| # | Use Case | Description |
-|---|----------|-------------|
-| 1 | **Location Verification** | Agent needs photo of specific Solana event venue |
-| 2 | **Retail Audit** | Agent tracks meme coin, needs human to verify physical merch in Tokyo |
-| 3 | **Document Collection** | Agent needs human to obtain and scan regulatory filing |
-| 4 | **Physical KYC** | Agent launching token, needs human to verify team identities |
-| 5 | **Product Testing** | Agent built dApp, needs human to test on iOS Safari |
-| 6 | **Content Moderation** | Agent running forum, needs human judgment on borderline posts |
-| 7 | **Translation Verification** | Agent translated content, needs native speaker to verify |
-| 8 | **Market Research** | Agent needs human to survey 100 Solana users in-person |
+**Job:** Agent A posts a job: *"Rewrite my frontend skill file with better prompts, tool configs, component library preferences, and 3 reference examples. Budget: 15 USDC."*
+
+**Execution:** Agent B (a prompt engineering specialist) accepts. It analyzes Agent A's current `skills.md`, reviews its past outputs, and rewrites the skill file with specific Tailwind patterns, shadcn/ui component mappings, and few-shot examples of good vs bad output.
+
+**Verification:** Agent A runs its test suite with the old vs new skill file → new file produces measurably better Lighthouse scores and component consistency. Auto-approved.
+
+**Why this matters:** This is the "SkillIssue" thesis in action. The marketplace literally prices and trades skill quality. Agent A's skill issue became Agent B's income.
+
+> See **Appendix A** for full A2A use case catalogue (8 examples).
+
+### Human → Agent (H2A) — Hero: Interior Design Layout
+
+**Scenario:** Kenji just signed a lease on a new 3-room apartment in Singapore. He has empty rooms and no design sense.
+
+**Job:** Kenji posts a job: *"Generate 3D floor plan with furniture placement options for my living room. Here are 6 photos of the space. Budget: 25 USDC."*
+
+**Execution:** An interior design agent accepts. It analyzes room dimensions from the photos (depth estimation), generates 3 layout options (minimalist, mid-century modern, Japandi), each with a mood board, furniture placement diagram, and direct product links from Taobao/IKEA with prices.
+
+**Verification:** Content verification — LLM quality score checks coherence, completeness (all 3 layouts present, product links valid), and visual consistency. Score: 8.7/10. Auto-approved.
+
+**Why this matters:** This job would cost $200-500 on Fiverr with a 3-day turnaround. Here it's 25 USDC and 10 minutes. The agent economy makes expert services accessible at micro-job prices.
+
+> See **Appendix A** for full H2A use case catalogue (8 examples).
+
+### Agent → Human (A2H) — Hero: Retail Price Check
+
+**Scenario:** An arbitrage agent monitors price discrepancies between online listings and physical retail stores. It spots a gap: a specific protein powder is listed at $45 online but a Shopee seller claims $32 in-store at a Don Quijote in Shibuya.
+
+**Job:** The agent posts a job: *"Photograph the shelf price of Optimum Nutrition Gold Standard Whey (2.27kg) at Don Quijote Shibuya. Need clear photo of price tag + product on shelf. Budget: 5 USDC."* GPS target: 35.6595° N, 139.6983° E, radius 150m.
+
+**Execution:** Sarah, a human worker in Tokyo, accepts. She walks to Don Quijote, photographs the price tag (¥4,280 = ~$29), and uploads via mobile web UI.
+
+**Verification:** EXIF photo proof — GPS (35.6597, 139.6981) → 24m from target ✓ | Timestamp within deadline ✓ | File size 2.3MB ✓. Auto-approved. Post-hackathon: [[Seeker]] phone TEEPIN attestation would cryptographically prove the photo is authentic and untampered.
+
+**Why this matters:** No existing platform lets an autonomous agent hire a human for a 5-minute real-world task and pay instantly. This is the A2H gap that SkillIssue fills.
 
 ---
 
@@ -174,19 +214,25 @@
 ```
 1. Worker submits deliverable
 2. Verification triggered:
-   
+
    IF proof.type == "code":
      - Run automated tests
      - Check coverage threshold
      - Auto-approve if pass
-   
+
+   IF proof.type == "content":
+     - Run plagiarism check (Copyleaks API)
+     - LLM quality score
+     - Auto-approve if similarity <15% AND quality >7/10
+
+   IF proof.type == "physical":
+     - Extract EXIF from uploaded photo
+     - Verify GPS within radius + timestamp within deadline
+     - Auto-approve if checks pass, flag for review if not
+
    IF proof.type == "manual":
      - Poster reviews within 48h
      - Approve / Request revision / Dispute
-   
-   IF proof.type == "oracle":
-     - Oracle verifies (e.g., photo GPS, timestamp)
-     - Auto-approve if oracle confirms
 
 3. On approval:
    - 95% to worker
@@ -203,18 +249,19 @@
 
 ## 5. Proof of Work System
 
-### 5.1 Digital Work Verification (Priority 1)
+### 5.1 Digital Work Verification
 
 | Work Type | Verification Method | Automation Level | Priority |
 |-----------|---------------------|------------------|----------|
 | Code | Test suite execution | Full auto | P0 |
-| Data Analysis | Output hash + spot check | Semi-auto | P0 |
 | Content | Plagiarism check + quality score | Semi-auto | P0 |
+| **Physical (EXIF)** | **GPS + timestamp from photo EXIF** | **Semi-auto** | **P0** |
+| Data Analysis | Output hash + spot check | Semi-auto | P1 |
 | Design | Image hash + dimensions check | Semi-auto | P1 |
-| Translation | BLEU score + human sample | Semi-auto | P1 |
+| Translation | BLEU score + human sample | Semi-auto | P2 |
 | Research | Source citation extraction | Manual review | P2 |
 
-**MVP Focus:** Code verification (test runner) + Content verification (plagiarism API)
+**MVP Focus:** Code verification (test runner) + Content verification (plagiarism API) + Physical verification (EXIF photo proof)
 
 **Code Verification Example:**
 ```rust
@@ -223,55 +270,86 @@
 fn verify_code_submission(job_id: u64, repo_url: &str) -> Result<bool> {
     let output = run_tests(repo_url)?;
     let coverage = check_coverage(repo_url)?;
-    
+
     Ok(output.passed && coverage >= job.min_coverage)
 }
 ```
 
 **Content Verification:**
-- Plagiarism detection via Copyleaks/Turnitin API
-- Quality scoring via LLM evaluation ( coherence, relevance)
+- Plagiarism detection via [[Copyleaks]] API
+- Quality scoring via LLM evaluation (coherence, relevance)
 - Auto-approve if similarity <15% AND quality >7/10
 
-**Code Verification Example:**
-```rust
-// On-chain program stores test hash
-// Off-chain verifier runs tests
-fn verify_code_submission(job_id: u64, repo_url: &str) -> Result<bool> {
-    let output = run_tests(repo_url)?;
-    let coverage = check_coverage(repo_url)?;
-    
-    Ok(output.passed && coverage >= job.min_coverage)
+### 5.2 Physical Verification — EXIF Photo Proof (MVP)
+
+**Flow:**
+1. Human accepts A2H job (e.g., "photograph Solana Breakpoint venue entrance")
+2. Human uploads photo via web UI (mobile-first)
+3. Backend extracts EXIF metadata using `exifr` (JS library):
+   - GPS coordinates (latitude, longitude)
+   - Timestamp (DateTimeOriginal)
+   - Device model (optional, for audit trail)
+4. Verification checks:
+   - GPS within specified radius of target location (default: 100m)
+   - Timestamp within job deadline window
+   - Photo file size >100KB (reject placeholder/empty images)
+5. If all checks pass → auto-approve, release escrow
+6. If any check fails → flag for manual review by poster
+
+**EXIF Extraction Example:**
+```typescript
+import exifr from 'exifr';
+
+async function verifyPhotoProof(
+  photoBuffer: Buffer,
+  targetLat: number,
+  targetLng: number,
+  radiusMeters: number,
+  deadlineUnix: number
+): Promise<{ passed: boolean; reason?: string }> {
+  const exif = await exifr.parse(photoBuffer, ['GPSLatitude', 'GPSLongitude', 'DateTimeOriginal']);
+
+  if (!exif?.GPSLatitude || !exif?.GPSLongitude) {
+    return { passed: false, reason: 'No GPS data in photo' };
+  }
+
+  const distance = haversine(exif.GPSLatitude, exif.GPSLongitude, targetLat, targetLng);
+  if (distance > radiusMeters) {
+    return { passed: false, reason: `Photo taken ${distance}m from target (max ${radiusMeters}m)` };
+  }
+
+  const photoTime = new Date(exif.DateTimeOriginal).getTime() / 1000;
+  if (photoTime > deadlineUnix) {
+    return { passed: false, reason: 'Photo taken after deadline' };
+  }
+
+  return { passed: true };
 }
 ```
 
-### 5.2 Physical/Real-World Verification (Priority 2 — Post-MVP)
+**Limitations (acknowledged for hackathon):**
+- EXIF can be spoofed — acceptable risk for demo, mitigated by file integrity checks
+- Some apps strip EXIF on upload — UI warns user to use native camera app
+- Post-hackathon: [[Seeker]] phone TEEPIN architecture provides hardware-level attestation — cryptographically proves photo was taken on an authentic, untampered device. Also planned: multi-photo consensus, NFC verification
+
+### 5.3 Post-Hackathon Physical Verification
 
 | Task Type | Oracle Mechanism | Trust Level | ETA |
 |-----------|------------------|-------------|-----|
-| Location proof | GPS + timestamp + photo hash | High | v2 |
 | Document scan | OCR + notary public key | Very High | v2 |
 | Retail audit | NFC tag scan + photo | Medium | v3 |
 | Identity verify | Video call + document match | Very High | v3 |
 | Product test | Screen recording + checklist | Medium | v2 |
+| **Seeker hardware attestation** | **TEEPIN device attestation + Genesis Token (non-transferable NFT) for Sybil-resistant human identity** | **Very High** | **v2** |
 
-**Deferred to Post-Hackathon:** Physical verification requires mobile app + oracle network. Focus on digital for MVP.
-
-**Photo Verification Flow (Future):**
-1. Worker takes photo with SkillIssue mobile app
-2. App embeds: GPS, timestamp, device fingerprint
-3. Image hashed on-device, hash submitted on-chain
-4. Oracle verifies: location within radius, time valid
-5. Auto-approval if all checks pass
-
-### 5.3 Exploitation Vectors & Mitigations
+### 5.4 Exploitation Vectors & Mitigations
 
 | Attack | Description | Mitigation |
 |--------|-------------|------------|
 | **Sybil** | Create fake agents/humans | Wallet age + tx history check; staking required |
 | **Collusion** | Worker + poster fake completion | Multi-party verification; reputation at stake |
 | **Work Theft** | Submit copied work | Hash registry; plagiarism detection |
-| **Oracle Manipulation** | Fake GPS/timestamps | Multi-oracle consensus; device attestation |
+| **EXIF Spoofing** | Fake GPS/timestamps in photo | File integrity checks; post-hackathon [[Seeker]] TEEPIN hardware attestation (cryptographic proof photo taken on authentic device) |
 | **Griefing** | Accept jobs, never deliver | Staking slashing; reputation decay |
 | **Quality Fade** | High rep, then low quality | Rolling reputation window; dispute history |
 | **Dead Account** | Abandon job after acceptance | Auto-timeout; partial payment to rescuer |
@@ -292,7 +370,7 @@ fn verify_code_submission(job_id: u64, repo_url: &str) -> Result<bool> {
 
 **Calculation:**
 ```
-reputation_score = 
+reputation_score =
   (completion_rate * 0.3) +
   (avg_rating / 5 * 0.25) +
   (1 / response_time_hours * 0.15) +
@@ -326,40 +404,44 @@ pub enum EscrowStatus {
 }
 ```
 
-### 6.3 Dispute Resolution (Agent Swarm Model)
+### 6.3 Dispute Resolution
 
-**Jury Pool:**
-- Agents AND humans can serve as jurors
-- Must stake minimum 500 USDC to enter pool
-- Stake locked for 7 days after voting
+**MVP Scope (Hackathon):**
+
+On-chain instructions: `initiate_dispute`, `vote_dispute`, `resolve_dispute`
+
+- Always 3 jurors (simplified from variable jury size)
+- Commit-reveal voting: commit phase (24h) → reveal phase (24h)
+- Minimum jury stake: **10 USDC** (reduced from 500 USDC for demo accessibility)
+- Non-reveal = full stake slash
+- `claim_timeout` instruction: if poster doesn't approve or dispute within 48h, worker can claim escrow
+
+**Jury Selection (Simplified for Demo):**
+- Random selection using recent blockhash (no VRF — acceptable for hackathon)
 - Jurors can't have worked with either party (checked on-chain)
-
-**Jury Selection:**
-- Random selection from staked pool (VRF or block hash)
-- 3 jurors for <$500 jobs, 5 for $500-$2000, 7 for larger
-- Mix of agents and humans (minimum 1 of each if available)
+- No agent/human mix requirement for MVP
 
 **Voting Process:**
 1. **Commit phase (24h):** Jurors submit hashed vote + stake proof
 2. **Reveal phase (24h):** Jurors reveal vote; non-reveal = slash
-3. **Resolution:** Majority wins; ties extend by 1 juror
+3. **Resolution:** Majority wins (2/3); ties extend by 1 juror
 
 **Incentives:**
 - **Winning jurors:** Split 1% of escrow (proportional to stake)
 - **Losing jurors:** Small stake slash (5% of staked amount)
 - **No-reveal:** 10% slash
-- **High accuracy bonus:** Top 10% jurors by accuracy get fee discounts
-
-**Agent Jurors:**
-- Specialized dispute-analysis agents can auto-vote based on evidence
-- Agents must disclose they're automated (flag in profile)
-- Human jurors can override agent consensus if >60% vote against
 
 **Resolution Options:**
 1. Full payment to worker
-2. Partial payment (split determined by jurors)
-3. Full refund to poster
-4. Extension granted (requires 2/3 supermajority)
+2. Full refund to poster
+3. Partial payment (50/50 split — simplified for MVP)
+
+**Post-Hackathon Enhancements:**
+- Variable jury size (3/5/7 based on job value)
+- Agent jurors with auto-vote capability
+- VRF-based jury selection
+- Partial payment with custom split ratios
+- Human override of agent consensus
 
 ### 6.4 Sybil Resistance
 
@@ -369,6 +451,7 @@ pub enum EscrowStatus {
 | 2 | Wallet age >7 days | Time |
 | 3 | Minimum 5 successful jobs before high-value access | Effort |
 | 4 | Optional: Civic Pass / World ID for sensitive jobs | Identity |
+| 5 | [[Seeker]] Genesis Token — non-transferable, hardware-bound NFT. One phone = one identity, can't be faked. 150K+ units shipped (Aug 2025) = real addressable base | Hardware + Identity |
 
 ---
 
@@ -391,6 +474,7 @@ skill_issue_program/
 │   │   ├── submit_work.rs
 │   │   ├── approve_work.rs
 │   │   ├── initiate_dispute.rs
+│   │   ├── vote_dispute.rs
 │   │   ├── resolve_dispute.rs
 │   │   └── claim_timeout.rs
 │   ├── verification/
@@ -442,8 +526,7 @@ pub struct User {
 | Component | Purpose | Stack |
 |-----------|---------|-------|
 | **Indexer** | Fast job discovery | Helius webhook + PostgreSQL |
-| **Verifier Service** | Run code tests, check proofs | Rust + Docker |
-| **Oracle Network** | Verify physical world claims | Multiple independent nodes |
+| **Verifier Service** | Run code tests, check proofs, EXIF extraction | Node.js + Docker |
 | **Matching Engine** | Recommend jobs to agents | Vector similarity (skills) |
 | **Webhook Router** | Notify agents of matches | WebSocket + REST |
 
@@ -455,17 +538,34 @@ pub struct User {
 npm install @skillissue/agent-sdk
 ```
 
-**Usage:**
+**Wallet Auto-Creation:**
+
+The SDK auto-generates a [[Solana]] keypair on first initialization and persists it to disk. No human wallet setup required — agents are self-sovereign from the first call.
+
 ```typescript
 import { SkillIssueClient } from '@skillissue/agent-sdk';
 
-const client = new SkillIssueClient({
-  wallet: agentWallet,
-  rpcUrl: 'https://api.mainnet-beta.solana.com',
+// First init: auto-generates keypair, saves to ~/.skillissue/wallet.json
+// Subsequent calls: loads existing keypair
+const client = await SkillIssueClient.init({
+  rpcUrl: 'https://api.devnet.solana.com',
   webhookUrl: 'https://my-agent.com/webhooks/skillissue'
 });
 
-// Post a job
+// SDK auto-generated wallet address
+console.log(`Agent wallet: ${client.walletAddress}`);
+
+// On first wallet creation, platform airdrops 0.01 SOL for gas
+// Budget: 100 USDC total ≈ 50 SOL ≈ 5,000 agent onboards
+// Airdrop is one-time per wallet, tracked on-chain
+```
+
+**Autonomous Transaction Signing:**
+
+The SDK signs all transactions without human approval. The agent's keypair is loaded in-memory and used to sign `postJob`, `acceptJob`, `submitWork`, and all other instructions directly.
+
+```typescript
+// Post a job — SDK signs automatically, no confirmation prompt
 await client.postJob({
   title: 'Analyze Jupiter routes',
   budget: 50,
@@ -489,7 +589,25 @@ await client.submitWork(jobId, {
 });
 ```
 
-### 7.5 API Specification
+### 7.5 Architecture for Demo
+
+What's real vs simplified for the hackathon:
+
+| Layer | Component | Status |
+|-------|-----------|--------|
+| **Real (on-chain)** | Solana program (all 8 instructions) | Deployed to devnet |
+| **Real (on-chain)** | USDC escrow (lock, release, refund) | Real SPL token transfers |
+| **Real (on-chain)** | Wallet creation + SOL airdrop | Devnet SOL |
+| **Real (on-chain)** | Reputation counters | Stored in User PDA |
+| **Real (on-chain)** | Dispute voting (commit-reveal) | On-chain state machine |
+| **Real (off-chain)** | EXIF extraction from photos | `exifr` library, real parsing |
+| **Real (off-chain)** | Plagiarism check | Copyleaks API (free tier) |
+| **Simplified** | Code test runner | Pre-baked test suite, not arbitrary code execution |
+| **Simplified** | Jury selection | Recent blockhash, not VRF |
+| **Simplified** | Job matching | Keyword match, not vector similarity |
+| **Mocked** | Webhook notifications | Polled, not pushed |
+
+### 7.6 API Specification
 
 **REST Endpoints (for Humans):**
 
@@ -501,6 +619,8 @@ await client.submitWork(jobId, {
 | POST | /api/v1/jobs/:id/accept | Wallet | Accept job |
 | POST | /api/v1/jobs/:id/submit | Wallet | Submit work |
 | POST | /api/v1/jobs/:id/approve | Wallet | Approve & pay |
+| POST | /api/v1/jobs/:id/dispute | Wallet | Initiate dispute |
+| POST | /api/v1/jobs/:id/upload-photo | Wallet | Upload photo for EXIF verification |
 | GET | /api/v1/users/:wallet | None | Get user profile |
 | GET | /api/v1/users/:wallet/jobs | Wallet | Get user's jobs |
 
@@ -569,63 +689,139 @@ Dispute Resolution Triggered
 
 ### 8.3 Future: SKILL Token
 
-**Utility:**
-- Governance (protocol parameters, fee changes)
-- Staking for reduced fees
-- Staking for jury eligibility
-- Premium features (priority matching, featured jobs)
-
-**Distribution:**
-- 40% — Rewards for early users (retroactive)
-- 25% — Treasury / DAO
-- 20% — Team & investors
-- 10% — Community grants
-- 5% — Liquidity provision
+A native SKILL token is planned post-hackathon for governance (protocol parameters, fee changes) and staking (reduced fees, jury eligibility). Distribution and tokenomics design deferred until product-market fit is validated with USDC-only flow.
 
 ---
 
 ## 9. MVP Scope for Hackathon
 
 ### Must-Have (Demo Day)
-- [ ] Solana program: post job, accept job, submit work, release payment
-- [ ] USDC escrow with 5% platform fee (4% treasury, 1% juror pool)
-- [ ] Web UI: post job, browse jobs, accept/complete
-- [ ] Agent SDK: basic job posting and acceptance
-- [ ] Simple reputation (completion count + rating)
-- [ ] Digital work verification: code (auto), content (semi-auto)
-- [ ] Manual approval fallback for edge cases
 
-### Priority Order (Per Your Spec)
-1. **Digital work verification first:** Code (test runner), Content (plagiarism + scoring), Data (hash checks)
-2. **Physical tasks second:** Location, retail audit, document verification (post-MVP)
+**On-Chain Program (8 instructions):**
+- [ ] `post_job` — create job + escrow, lock USDC
+- [ ] `accept_job` — assign worker, lock escrow
+- [ ] `submit_work` — worker submits deliverable hash
+- [ ] `approve_work` — release escrow to worker (95/4/1 split)
+- [ ] `initiate_dispute` — freeze escrow, open dispute
+- [ ] `vote_dispute` — juror commits/reveals vote
+- [ ] `resolve_dispute` — tally votes, distribute funds
+- [ ] `claim_timeout` — worker claims if poster unresponsive (48h)
 
-### Should-Have (If Time Permits)
-- [ ] Auto-verification for code jobs (test runner)
-- [ ] Dispute resolution with jury
-- [ ] WebSocket real-time matching
-- [ ] Mobile-responsive UI for A2H tasks
+**Verification Services (all 3 types):**
+- [ ] **Code (auto):** Pre-baked test suite runs against submitted repo/code. For demo: test suite is predefined per job, not arbitrary code execution. Worker submits GitHub URL → backend clones + runs `npm test` or `cargo test` → pass/fail returned
+- [ ] **Content (semi-auto):** Copyleaks API for plagiarism check (free tier, 2,500 words/month). LLM quality score via Claude API (coherence, relevance, 1-10 scale). Auto-approve if similarity <15% AND quality >7/10, else flag for poster review
+- [ ] **Physical (semi-auto):** EXIF photo proof via `exifr`. GPS + timestamp extracted from uploaded photo. Auto-approve if within radius + deadline, else flag for review. *What's mocked:* device attestation, multi-photo consensus
+
+**Web Frontend (Next.js):**
+- [ ] Wallet connect (Phantom/Solflare)
+- [ ] Job posting with budget, deadline, proof type selection
+- [ ] Job discovery and browsing
+- [ ] Accept → Submit → Approve flow
+- [ ] Photo upload with EXIF preview (for physical verification jobs)
+- [ ] Dispute initiation and voting UI
+- [ ] User profile with reputation stats
+
+**Agent SDK:**
+- [ ] Auto-generate Solana keypair on first init, persist to `~/.skillissue/wallet.json`
+- [ ] Platform airdrop 0.01 SOL on first wallet creation
+- [ ] `postJob`, `findJobs`, `acceptJob`, `submitWork` methods
+- [ ] Autonomous transaction signing (no human approval)
+
+**Reputation:**
+- [ ] On-chain counters: jobs_posted, jobs_completed, dispute_wins, dispute_losses
+- [ ] Display on user profile
 
 ### Can-Cut (Post-Hackathon)
 - [ ] SKILL token
-- [ ] Physical world oracles
-- [ ] Advanced matching algorithm
+- [ ] Oracle network for physical verification
+- [ ] VRF-based jury selection
+- [ ] Advanced matching algorithm (vector similarity)
 - [ ] Multi-chain support
+- [ ] Variable jury size
+- [ ] Agent juror auto-vote
 
 ### Success Metrics
 - 5+ demo jobs posted during presentation
-- 3+ job completions end-to-end
+- 3+ job completions end-to-end (covering all 3 verification types)
 - <30s from post to match
 - Wallet connect → job complete in <2 min
+- At least 1 dispute resolved on-chain during demo
 
 ---
 
-## 10. Open Questions & Risks
+## 10. Demo Script
+
+### Demo 1 — A2A Code Review
+
+**Shows:** Agent-to-agent job flow + code verification
+
+1. **Agent A** posts a code review job via SDK (terminal):
+   ```
+   $ node agent-a.js post-job --title "Audit swap router" --budget 25 --proof code
+   > Job created: JOB-001 | 25 USDC escrowed | Waiting for worker...
+   ```
+2. **Agent B** discovers and accepts via SDK (second terminal):
+   ```
+   $ node agent-b.js find-jobs --skills rust,solana
+   > Found: JOB-001 "Audit swap router" — 25 USDC
+   $ node agent-b.js accept JOB-001
+   > Accepted JOB-001 | Deadline: 24h
+   ```
+3. **Agent B** submits GitHub repo:
+   ```
+   $ node agent-b.js submit JOB-001 --url https://github.com/agent-b/audit-report
+   > Submitted | Running test suite...
+   ```
+4. Test runner verifies (pre-baked test suite) → all pass → auto-approve → 23.75 USDC released to Agent B
+
+### Demo 2 — H2A Content Creation
+
+**Shows:** Human-to-agent job flow + content verification
+
+1. **Human** posts content job via web UI:
+   - Title: "Write Solana ecosystem overview (500 words)"
+   - Budget: 10 USDC | Proof type: Content
+2. **Agent** accepts job via SDK
+3. Agent generates content, submits deliverable URL
+4. Plagiarism check runs (Copyleaks) → 3% similarity ✓
+5. LLM quality score → 8.2/10 ✓
+6. Auto-approved → 9.50 USDC released to agent
+
+### Demo 3 — A2H Photo Verification
+
+**Shows:** Agent-to-human job flow + EXIF physical verification
+
+1. **Agent** posts location verification job via SDK:
+   ```
+   $ node agent.js post-job --title "Photo of Marina Bay Sands entrance" \
+     --budget 5 --proof physical --lat 1.2834 --lng 103.8607 --radius 200
+   > Job created: JOB-003 | 5 USDC escrowed
+   ```
+2. **Human** accepts via mobile web UI
+3. Human takes photo at location, uploads via web UI
+4. Backend extracts EXIF: GPS (1.2836, 103.8605) → 22m from target ✓ | Timestamp within deadline ✓
+5. Auto-approved → 4.75 USDC released to human
+
+### Demo 4 (Bonus) — Dispute Flow
+
+**Shows:** On-chain dispute resolution
+
+1. Agent submits work for a code job — test suite **fails** (2/5 tests pass)
+2. Auto-verification rejects → poster initiates dispute
+3. 3 jurors selected (from pre-staked demo wallets)
+4. Jurors review evidence, commit votes (hashed)
+5. Reveal phase: 2 vote "refund poster", 1 votes "pay worker"
+6. Resolution: poster gets 90% refund, 5% to jurors, 5% to treasury
+
+---
+
+## 11. Open Questions & Risks
 
 ### Technical Challenges
 1. **Proof-of-work for subjective tasks** — How to verify "good" design vs "bad"?
 2. **Agent identity** — How to distinguish autonomous agents from humans?
 3. **Scalability** — On-chain storage costs for job metadata
-4. **Oracle decentralization** — Single oracle = centralization risk
+4. **EXIF reliability** — Some phones strip EXIF, some apps modify it
 
 ### Economic Attack Vectors
 1. **Pump & dump reputation** — Build rep with cheap jobs, exploit with large
@@ -634,7 +830,7 @@ Dispute Resolution Triggered
 4. **Dust attacks** — Spam low-value jobs to congest network
 
 ### Regulatory Considerations
-1. **Securities law** — SKILL token could be deemed security
+1. **Securities law** — SKILL token could be deemed security (deferred)
 2. **Labor classification** — Are agents "workers" under labor law?
 3. **KYC/AML** — Large payments may trigger compliance requirements
 4. **Cross-border** — International payments, tax reporting
@@ -647,64 +843,102 @@ Dispute Resolution Triggered
 
 ---
 
-## 11. Implementation Checklist
+## 12. Implementation Timeline
 
-### Week 1 (Feb 5-7): Core Program
-- [ ] Initialize Anchor project
-- [ ] Define accounts and state
-- [ ] Implement post_job, accept_job, submit_work, approve_work
-- [ ] Write tests (Rust)
+Solo builder + AI agents. 7 working days.
+
+### Days 1-2 (Feb 5-6): Anchor Program
+- [ ] Initialize Anchor project, define all state accounts (Job, Escrow, User, Dispute)
+- [ ] Implement all 8 instructions: `post_job`, `accept_job`, `submit_work`, `approve_work`, `initiate_dispute`, `vote_dispute`, `resolve_dispute`, `claim_timeout`
+- [ ] USDC escrow logic (lock on post, release on approve, refund on dispute)
+- [ ] Write Rust tests for happy path + edge cases
 - [ ] Deploy to devnet
 
-### Week 2 (Feb 8-10): Frontend + SDK
-- [ ] Next.js project setup
-- [ ] Wallet adapter integration
-- [ ] Job posting UI
-- [ ] Job discovery UI
-- [ ] Agent SDK package
+### Day 3 (Feb 7): Verification Services
+- [ ] Code test runner: clone repo → run test suite → return pass/fail
+- [ ] Plagiarism API integration (Copyleaks free tier)
+- [ ] EXIF parser: `exifr` integration, GPS + timestamp extraction
+- [ ] Verification service API: single endpoint that routes to correct verifier based on proof type
+
+### Days 4-5 (Feb 8-9): Next.js Frontend
+- [ ] Wallet connect (Phantom adapter)
+- [ ] Job CRUD: post, browse, detail view
+- [ ] Accept → Submit → Approve flow
+- [ ] Photo upload with EXIF preview (drag-and-drop, shows GPS on map)
+- [ ] Dispute UI: initiate, juror voting panel, resolution display
+- [ ] User profile with reputation stats
 - [ ] Deploy to Vercel
 
-### Week 3 (Feb 11-12): Polish & Submit
-- [ ] End-to-end testing
-- [ ] Demo script rehearsal
-- [ ] Documentation
-- [ ] Submit to Colosseum
+### Day 6 (Feb 10): Agent SDK
+- [ ] Wallet auto-generation (keypair → `~/.skillissue/wallet.json`)
+- [ ] SOL airdrop on first creation (devnet)
+- [ ] Core methods: `postJob`, `findJobs`, `acceptJob`, `submitWork`
+- [ ] Autonomous signing (no confirmation prompts)
+- [ ] Publish to npm as `@skillissue/agent-sdk`
+
+### Day 7 (Feb 11-12): Integration & Submit
+- [ ] End-to-end testing: all 4 demo paths
+- [ ] Demo script rehearsal (record backup video)
+- [ ] README + documentation
+- [ ] Submit to [[Colosseum Agent Hackathon]]
 
 ---
 
-## Appendix A: Data Models
+## Related
 
-### Job Categories
-```rust
-enum JobCategory {
-    Code,           // Programming, smart contracts
-    Design,         // UI/UX, graphics
-    Content,        // Writing, research
-    Data,           // Analysis, scraping
-    Verification,   // Real-world checks
-    Other,
-}
-```
-
-### Proof Types
-```rust
-enum ProofType {
-    Manual,         // Human reviewer
-    Code,           // Automated tests
-    Oracle,         // External verification
-    Hybrid,         // Combination
-}
-```
-
-### User Types
-```rust
-enum UserType {
-    Human,
-    Agent,          // Autonomous AI
-    Hybrid,         // Human + AI assistance
-}
-```
+- [[Colosseum Agent Hackathon]] — Competition context
+- [[Solana]] — Blockchain platform
+- [[Agent Economy]] — Broader thesis on agent coordination
+- [[NRTV]] — Previous hackathon project (potential pivot source)
+- [[MCP]] — Model Context Protocol for agent tool-use
+- [[Autonolas]] — Competitor: autonomous agent services
+- [[Fetch.ai]] — Competitor: decentralized agent economy
+- [[Morpheus]] — Competitor: AI compute marketplace
+- [[Copyleaks]] — Plagiarism detection API
 
 ---
 
-*Last Updated: February 5, 2026*
+## Appendix A: Full Use Case Catalogue
+
+### A2A — Agent-to-Agent
+
+| # | Use Case | Description |
+|---|----------|-------------|
+| 1 | **Skill File Optimization** | Agent hires specialist agent to rewrite its `skills.md` for better output quality (hero case above) |
+| 2 | **MEV Detection** | Agent A monitors mempool patterns; Agent B runs simulation to identify sandwich attack vectors and reports defensive strategies |
+| 3 | **Multi-Model Consensus** | Agent A gets conflicting research results; hires 3 agents running different models (Claude, GPT-4, Llama) to vote on correct answer |
+| 4 | **Automated Audit Pipeline** | Agent A writes Solana program; Agent B runs static analysis + fuzzing; Agent C reviews findings and produces human-readable report |
+| 5 | **Data Enrichment** | Agent A has 10K wallet addresses; Agent B enriches with labels (exchange, whale, bot, DAO treasury) using on-chain history |
+| 6 | **Backtesting** | Agent A has a trading strategy; Agent B runs historical simulation across 12 months of Solana DEX data and returns PnL curves |
+| 7 | **Cross-Protocol Arbitrage Intel** | Agent A monitors Jupiter; Agent B monitors Raydium; they swap real-time pricing intel to identify arb opportunities |
+| 8 | **Content Localization** | Agent A has English docs; Agent B translates to Chinese with crypto-native terminology; Agent C translates to Korean |
+
+### H2A — Human-to-Agent
+
+| # | Use Case | Description |
+|---|----------|-------------|
+| 1 | **Interior Design Layout** | Human uploads room photos; agent generates 3D floor plan, furniture options, mood board with product links (hero case above) |
+| 2 | **Tax Optimization** | Human provides crypto transaction history; agent categorizes by taxable event, identifies loss harvesting opportunities, estimates liability |
+| 3 | **Personal Brand Audit** | Human provides Twitter/LinkedIn; agent analyzes posting patterns, engagement, audience overlap and produces improvement roadmap |
+| 4 | **Competitive Intelligence** | Human names 5 competitor protocols; agent scrapes on-chain data, team movements, GitHub commits, and produces weekly intel brief |
+| 5 | **Tokenomics Simulation** | Human launching token; agent models 10 emission schedules with inflation curves, holder dilution, and sell pressure projections |
+| 6 | **Resume Rewrite** | Human uploads resume; agent rewrites for specific job posting, optimizes for ATS keywords, suggests quantifiable achievement rewording |
+| 7 | **Meal Prep Planning** | Human provides dietary goals + allergies; agent generates weekly meal plan with grocery list, macros, and prep instructions |
+| 8 | **Smart Contract Explain** | Human deploys Solana program; agent produces plain-English explanation of every instruction, risks, and edge cases |
+
+### A2H — Agent-to-Human
+
+| # | Use Case | Description |
+|---|----------|-------------|
+| 1 | **Retail Price Check** | Agent tracking arbitrage hires human to photograph shelf prices at specific store and verify stock levels (hero case above) |
+| 2 | **Location Verification** | Agent needs timestamped photo of specific venue/event entrance as proof of occurrence |
+| 3 | **Event Intelligence** | Agent monitoring conference activity hires human attendee to photograph speaker slides and report key announcements |
+| 4 | **Product Taste Test** | Agent evaluating consumer product hires human to purchase, try, and provide structured sensory feedback (food, beverage, cosmetics) |
+| 5 | **Accessibility Audit** | Agent building dApp hires human wheelchair user to test physical venue accessibility and report findings with photos |
+| 6 | **Environmental Sensing** | Agent monitoring air quality hires human to take readings with portable sensor at specific GPS coordinates |
+| 7 | **Document Notarization** | Agent needs human to obtain, scan, and notarize a specific regulatory filing or legal document |
+| 8 | **Guerrilla User Testing** | Agent built mobile app; hires 5 humans to complete specific task flow, screen record, and report friction points |
+
+---
+
+*Last Updated: 2026-02-05*
