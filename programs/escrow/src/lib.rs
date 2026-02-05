@@ -3,18 +3,26 @@ use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
 declare_id!("SK1LL1ssueEscrow1111111111111111111111111111");
 
+/// Maximum number of oracle members
+pub const MAX_ORACLES: usize = 5;
+
 #[program]
 pub mod skill_issue_escrow {
     use super::*;
 
-    /// Initialize escrow for a job
+    /// Initialize escrow for a job with oracle multisig
     pub fn initialize_escrow(
         ctx: Context<InitializeEscrow>,
         job_id: u64,
         amount: u64,
         worker: Pubkey,
         deadline: i64,
+        oracles: Vec<Pubkey>,
+        threshold: u8,
     ) -> Result<()> {
+        require!(oracles.len() <= MAX_ORACLES, ErrorCode::TooManyOracles);
+        require!(threshold > 0 && threshold as usize <= oracles.len(), ErrorCode::InvalidThreshold);
+        
         let escrow = &mut ctx.accounts.escrow;
         
         escrow.job_id = job_id;
@@ -26,12 +34,18 @@ pub mod skill_issue_escrow {
         escrow.dispute_initiated = false;
         escrow.juror_votes_for_worker = 0;
         escrow.juror_votes_for_poster = 0;
+        escrow.oracles = oracles.clone();
+        escrow.threshold = threshold;
+        escrow.release_approvals = vec![];
+        escrow.refund_approvals = vec![];
         
         emit!(EscrowInitialized {
             job_id,
             poster: ctx.accounts.poster.key(),
             worker,
             amount,
+            oracles,
+            threshold,
         });
         
         Ok(())
@@ -67,26 +81,90 @@ pub mod skill_issue_escrow {
         Ok(())
     }
 
-    /// Release payment to worker (95%) + platform (4%) + juror pool (1%)
-    pub fn release_payment(ctx: Context<ReleasePayment>, job_id: u64) -> Result<()> {
+    /// Oracle approves release (collects signatures)
+    pub fn approve_release(ctx: Context<OracleAction>, job_id: u64) -> Result<()> {
         let escrow = &mut ctx.accounts.escrow;
         
+        require!(escrow.job_id == job_id, ErrorCode::InvalidJobId);
         require!(
             escrow.status == EscrowStatus::Funded || escrow.status == EscrowStatus::Disputed,
             ErrorCode::InvalidEscrowStatus
         );
-        require!(escrow.job_id == job_id, ErrorCode::InvalidJobId);
         
-        // Only oracle or poster can release (or jurors if dispute resolved)
-        let is_oracle = ctx.accounts.authority.key() == escrow.oracle;
-        let is_poster = ctx.accounts.authority.key() == escrow.poster;
+        let oracle = ctx.accounts.oracle.key();
+        require!(escrow.oracles.contains(&oracle), ErrorCode::Unauthorized);
+        require!(!escrow.release_approvals.contains(&oracle), ErrorCode::AlreadyApproved);
+        
+        escrow.release_approvals.push(oracle);
+        
+        emit!(ReleaseApproved {
+            job_id,
+            oracle,
+            approvals_count: escrow.release_approvals.len() as u8,
+            threshold: escrow.threshold,
+        });
+        
+        Ok(())
+    }
+
+    /// Oracle approves refund (collects signatures)
+    pub fn approve_refund(ctx: Context<OracleAction>, job_id: u64) -> Result<()> {
+        let escrow = &mut ctx.accounts.escrow;
+        
+        require!(escrow.job_id == job_id, ErrorCode::InvalidJobId);
+        require!(
+            escrow.status == EscrowStatus::Funded || escrow.status == EscrowStatus::Disputed,
+            ErrorCode::InvalidEscrowStatus
+        );
+        
+        let oracle = ctx.accounts.oracle.key();
+        require!(escrow.oracles.contains(&oracle), ErrorCode::Unauthorized);
+        require!(!escrow.refund_approvals.contains(&oracle), ErrorCode::AlreadyApproved);
+        
+        escrow.refund_approvals.push(oracle);
+        
+        emit!(RefundApproved {
+            job_id,
+            oracle,
+            approvals_count: escrow.refund_approvals.len() as u8,
+            threshold: escrow.threshold,
+        });
+        
+        Ok(())
+    }
+
+    /// Execute release payment after threshold reached
+    pub fn execute_release(ctx: Context<ExecuteRelease>, job_id: u64) -> Result<()> {
+        let escrow = &mut ctx.accounts.escrow;
+        
+        require!(escrow.job_id == job_id, ErrorCode::InvalidJobId);
+        require!(
+            escrow.status == EscrowStatus::Funded || escrow.status == EscrowStatus::Disputed,
+            ErrorCode::InvalidEscrowStatus
+        );
+        
+        // Check threshold for release
         let is_dispute_resolved = escrow.status == EscrowStatus::Disputed 
             && escrow.juror_votes_for_worker >= 2;
         
+        let has_threshold = escrow.release_approvals.len() as u8 >= escrow.threshold;
+        
+        // Poster can unilaterally release (happy path)
+        let is_poster = ctx.accounts.executor.key() == escrow.poster;
+        let is_worker = ctx.accounts.executor.key() == escrow.worker;
+        
         require!(
-            is_oracle || is_poster || is_dispute_resolved,
+            has_threshold || is_dispute_resolved || is_poster || is_worker,
             ErrorCode::Unauthorized
         );
+        
+        // For worker self-release, require work submitted or timeout
+        if is_worker {
+            require!(
+                Clock::get()?.unix_timestamp > escrow.deadline + 48 * 3600,
+                ErrorCode::DeadlineNotPassed
+            );
+        }
         
         let total = escrow.amount;
         let worker_amount = total * 95 / 100;
@@ -134,30 +212,31 @@ pub mod skill_issue_escrow {
             worker_amount,
             platform_amount,
             juror_amount,
+            approved_by: escrow.release_approvals.clone(),
         });
         
         Ok(())
     }
 
-    /// Refund to poster (for disputes resolved in poster's favor or timeout)
-    pub fn refund(ctx: Context<Refund>, job_id: u64) -> Result<()> {
+    /// Execute refund after threshold reached
+    pub fn execute_refund(ctx: Context<ExecuteRefund>, job_id: u64) -> Result<()> {
         let escrow = &mut ctx.accounts.escrow;
         
+        require!(escrow.job_id == job_id, ErrorCode::InvalidJobId);
         require!(
             escrow.status == EscrowStatus::Funded || escrow.status == EscrowStatus::Disputed,
             ErrorCode::InvalidEscrowStatus
         );
-        require!(escrow.job_id == job_id, ErrorCode::InvalidJobId);
         
-        // Check authorization or timeout
-        let is_oracle = ctx.accounts.authority.key() == escrow.oracle;
-        let is_poster = ctx.accounts.authority.key() == escrow.poster;
-        let is_timeout = Clock::get()?.unix_timestamp > escrow.deadline + 48 * 3600;
+        // Check threshold for refund
         let is_dispute_resolved = escrow.status == EscrowStatus::Disputed 
             && escrow.juror_votes_for_poster >= 2;
         
+        let has_threshold = escrow.refund_approvals.len() as u8 >= escrow.threshold;
+        let is_timeout = Clock::get()?.unix_timestamp > escrow.deadline + 48 * 3600;
+        
         require!(
-            is_oracle || is_poster || is_timeout || is_dispute_resolved,
+            has_threshold || is_dispute_resolved || is_timeout,
             ErrorCode::Unauthorized
         );
         
@@ -173,13 +252,15 @@ pub mod skill_issue_escrow {
         let seeds = &[b"escrow", &job_id.to_le_bytes()[..], &[ctx.bumps.escrow]];
         let signer = &[&seeds[..]];
         
+        let cpi_program = ctx.accounts.token_program.to_account_info();
+        
+        // Transfer to poster
         let cpi_accounts = Transfer {
             from: ctx.accounts.escrow_token_account.to_account_info(),
             to: ctx.accounts.poster_token_account.to_account_info(),
             authority: escrow.to_account_info(),
         };
-        let cpi_program = ctx.accounts.token_program.to_account_info();
-        let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
+        let cpi_ctx = CpiContext::new_with_signer(cpi_program.clone(), cpi_accounts, signer);
         token::transfer(cpi_ctx, poster_amount)?;
         
         if escrow.status == EscrowStatus::Disputed {
@@ -192,7 +273,7 @@ pub mod skill_issue_escrow {
                 to: ctx.accounts.juror_pool_token_account.to_account_info(),
                 authority: escrow.to_account_info(),
             };
-            let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
+            let cpi_ctx = CpiContext::new_with_signer(cpi_program.clone(), cpi_accounts, signer);
             token::transfer(cpi_ctx, juror_amount)?;
             
             let cpi_accounts = Transfer {
@@ -210,6 +291,7 @@ pub mod skill_issue_escrow {
             job_id,
             poster: escrow.poster,
             amount: poster_amount,
+            approved_by: escrow.refund_approvals.clone(),
         });
         
         Ok(())
@@ -287,9 +369,6 @@ pub struct InitializeEscrow<'info> {
     )]
     pub escrow: Account<'info, Escrow>,
     
-    /// CHECK: Oracle is a trusted authority for releases
-    pub oracle: AccountInfo<'info>,
-    
     pub system_program: Program<'info, System>,
 }
 
@@ -333,9 +412,23 @@ pub struct Deposit<'info> {
 
 #[derive(Accounts)]
 #[instruction(job_id: u64)]
-pub struct ReleasePayment<'info> {
+pub struct OracleAction<'info> {
     #[account(mut)]
-    pub authority: Signer<'info>,
+    pub oracle: Signer<'info>,
+    
+    #[account(
+        mut,
+        seeds = [b"escrow", &job_id.to_le_bytes()],
+        bump,
+    )]
+    pub escrow: Account<'info, Escrow>,
+}
+
+#[derive(Accounts)]
+#[instruction(job_id: u64)]
+pub struct ExecuteRelease<'info> {
+    #[account(mut)]
+    pub executor: Signer<'info>,
     
     #[account(
         mut,
@@ -375,9 +468,9 @@ pub struct ReleasePayment<'info> {
 
 #[derive(Accounts)]
 #[instruction(job_id: u64)]
-pub struct Refund<'info> {
+pub struct ExecuteRefund<'info> {
     #[account(mut)]
-    pub authority: Signer<'info>,
+    pub executor: Signer<'info>,
     
     #[account(
         mut,
@@ -404,13 +497,13 @@ pub struct Refund<'info> {
         mut,
         constraint = juror_pool_token_account.mint == escrow_token_account.mint,
     )]
-    pub juror_pool_token_account: Option<Account<'info, TokenAccount>>,
+    pub juror_pool_token_account: Account<'info, TokenAccount>,
     
     #[account(
         mut,
         constraint = treasury_token_account.mint == escrow_token_account.mint,
     )]
-    pub treasury_token_account: Option<Account<'info, TokenAccount>>,
+    pub treasury_token_account: Account<'info, TokenAccount>,
     
     pub token_program: Program<'info, Token>,
 }
@@ -448,7 +541,6 @@ pub struct Escrow {
     pub job_id: u64,
     pub poster: Pubkey,
     pub worker: Pubkey,
-    pub oracle: Pubkey,
     pub amount: u64,
     pub deadline: i64,
     pub status: EscrowStatus,
@@ -456,10 +548,16 @@ pub struct Escrow {
     pub dispute_initiator: Pubkey,
     pub juror_votes_for_worker: u8,
     pub juror_votes_for_poster: u8,
+    pub oracles: Vec<Pubkey>,
+    pub threshold: u8,
+    pub release_approvals: Vec<Pubkey>,
+    pub refund_approvals: Vec<Pubkey>,
 }
 
 impl Escrow {
-    pub const SIZE: usize = 8 + 32 + 32 + 32 + 8 + 8 + 1 + 1 + 32 + 1 + 1;
+    // Size calculation with max oracles
+    pub const SIZE: usize = 8 + 32 + 32 + 8 + 8 + 1 + 1 + 32 + 1 + 1 + 
+        (4 + MAX_ORACLES * 32) + 1 + (4 + MAX_ORACLES * 32) + (4 + MAX_ORACLES * 32);
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
@@ -483,6 +581,12 @@ pub enum ErrorCode {
     DeadlineNotPassed,
     #[msg("Insufficient funds")]
     InsufficientFunds,
+    #[msg("Too many oracles (max 5)")]
+    TooManyOracles,
+    #[msg("Invalid threshold")]
+    InvalidThreshold,
+    #[msg("Oracle already approved")]
+    AlreadyApproved,
 }
 
 #[event]
@@ -491,6 +595,8 @@ pub struct EscrowInitialized {
     pub poster: Pubkey,
     pub worker: Pubkey,
     pub amount: u64,
+    pub oracles: Vec<Pubkey>,
+    pub threshold: u8,
 }
 
 #[event]
@@ -500,12 +606,29 @@ pub struct EscrowFunded {
 }
 
 #[event]
+pub struct ReleaseApproved {
+    pub job_id: u64,
+    pub oracle: Pubkey,
+    pub approvals_count: u8,
+    pub threshold: u8,
+}
+
+#[event]
+pub struct RefundApproved {
+    pub job_id: u64,
+    pub oracle: Pubkey,
+    pub approvals_count: u8,
+    pub threshold: u8,
+}
+
+#[event]
 pub struct PaymentReleased {
     pub job_id: u64,
     pub worker: Pubkey,
     pub worker_amount: u64,
     pub platform_amount: u64,
     pub juror_amount: u64,
+    pub approved_by: Vec<Pubkey>,
 }
 
 #[event]
@@ -513,6 +636,7 @@ pub struct PaymentRefunded {
     pub job_id: u64,
     pub poster: Pubkey,
     pub amount: u64,
+    pub approved_by: Vec<Pubkey>,
 }
 
 #[event]
