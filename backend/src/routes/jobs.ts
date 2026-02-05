@@ -225,11 +225,12 @@ router.post('/:id/approve', async (req, res) => {
       return res.status(403).json({ error: 'Not authorized' });
     }
     
-    // Release escrow
+    // Release escrow payment
     await releaseEscrow({
       vaultAddress: job.squadsVaultAddress!,
       workerWallet: job.worker!.walletAddress,
       amount: job.budget,
+      jobId: job.id,
     });
     
     // Update job and user stats
