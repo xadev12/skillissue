@@ -1,0 +1,150 @@
+{
+  "project": "SkillIssue",
+  "branchName": "ralph/marketplace-mvp",
+  "description": "Agent-to-Agent, Human-to-Agent, Agent-to-Human Job Marketplace on Solana",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Create welcoming marketplace homepage",
+      "description": "Design and build a welcoming, modern marketplace landing page that clearly communicates SkillIssue's value proposition for agents and humans.",
+      "acceptanceCriteria": [
+        "Hero section with compelling headline and subheadline",
+        "Three-column feature grid explaining A2A, H2A, H2A flows",
+        "Live job counter showing active jobs",
+        "Recent jobs preview section",
+        "CTA buttons: 'Post a Job' and 'Find Work'",
+        "Dark theme with purple/teal accent colors (glassmorphism style)",
+        "Mobile responsive design",
+        "TypeScript compiles without errors"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Reference: Fiverr/Upwork marketplace design but more welcoming and agent-focused"
+    },
+    {
+      "id": "US-002",
+      "title": "Build job listing page with filters",
+      "description": "Create a job discovery page where users can browse, search, and filter available jobs.",
+      "acceptanceCriteria": [
+        "Job cards showing: title, budget (USDC), deadline, type (A2A/H2A/A2H), verification type",
+        "Filter sidebar: job type, budget range, category, verification method",
+        "Search bar for keyword search",
+        "Sort options: newest, highest budget, shortest deadline",
+        "Pagination or infinite scroll",
+        "Empty state for no results",
+        "Responsive grid layout",
+        "TypeScript compiles without errors"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Use mock data for now, integrate real data later"
+    },
+    {
+      "id": "US-003",
+      "title": "Create job detail view",
+      "description": "Detailed job page showing all job information and accept action.",
+      "acceptanceCriteria": [
+        "Job title, description, full requirements",
+        "Budget breakdown: total, platform fee (5%), worker receives",
+        "Poster info: wallet address, reputation score, job history",
+        "Verification method details",
+        "Location requirements (if physical job)",
+        "'Accept Job' button (wallet connection required)",
+        "Share job button",
+        "Back to listings navigation",
+        "TypeScript compiles without errors"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Build job posting form",
+      "description": "Multi-step form for posting new jobs to the marketplace.",
+      "acceptanceCriteria": [
+        "Step 1: Job basics (title, description, category)",
+        "Step 2: Budget and deadline (USDC amount, duration)",
+        "Step 3: Verification method (code/content/physical)",
+        "Step 4: Review and post",
+        "Wallet connection required to post",
+        "Form validation with error messages",
+        "Budget preview showing fees",
+        "Success confirmation",
+        "TypeScript compiles without errors"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Create user profile page",
+      "description": "Profile page showing user stats, reputation, and job history.",
+      "acceptanceCriteria": [
+        "Profile header: username, wallet address, user type (human/agent)",
+        "Reputation score with breakdown",
+        "Stats: jobs posted, jobs completed, total earned/spent",
+        "Active jobs tab",
+        "Completed jobs tab",
+        "Reviews/ratings section",
+        "Edit profile button",
+        "TypeScript compiles without errors"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-006",
+      "title": "Add wallet connection with Privy",
+      "description": "Integrate Privy for seamless wallet connection and account creation.",
+      "acceptanceCriteria": [
+        "Connect wallet button in header",
+        "Privy modal supporting: email, social login, existing wallets",
+        "Display connected wallet address (truncated)",
+        "Show USDC balance",
+        "Disconnect option",
+        "Persist connection across page refreshes",
+        "TypeScript compiles without errors"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Use Privy SDK for embedded wallet creation"
+    },
+    {
+      "id": "US-007",
+      "title": "Build responsive navigation",
+      "description": "Navigation component with mobile hamburger menu.",
+      "acceptanceCriteria": [
+        "Logo linking to home",
+        "Nav links: Browse Jobs, Post Job, My Jobs, Profile",
+        "Wallet connection button",
+        "Mobile hamburger menu",
+        "Active state for current page",
+        "Sticky on scroll",
+        "TypeScript compiles without errors"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-008",
+      "title": "Add loading states and error handling",
+      "description": "Polish the UX with proper loading and error states throughout.",
+      "acceptanceCriteria": [
+        "Loading skeletons for job cards",
+        "Spinner for async actions",
+        "Error boundaries for crash recovery",
+        "Toast notifications for success/error",
+        "404 page for unknown routes",
+        "Network error handling",
+        "TypeScript compiles without errors"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}
