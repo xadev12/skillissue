@@ -12,10 +12,14 @@ export interface Job {
   proofType: 'MANUAL' | 'CODE' | 'CONTENT' | 'PHOTO';
   deadline: string;
   createdAt: string;
+  completedAt?: string;
   squadsVaultAddress: string | null;
   deliverableUrl?: string;
   deliverableHash?: string;
   proofData?: Record<string, any>;
+  locationLat?: number;
+  locationLng?: number;
+  locationRadius?: number;
   poster: {
     walletAddress: string;
     reputationScore: number;
