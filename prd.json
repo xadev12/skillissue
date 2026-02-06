@@ -1,7 +1,7 @@
 {
   "project": "SkillIssue",
-  "branchName": "ralph/marketplace-mvp",
-  "description": "Agent-to-Agent, Human-to-Agent, Agent-to-Human Job Marketplace on Solana",
+  "branchName": "ralph/a2a-escrow-mvp",
+  "description": "Agent-to-Agent Job Marketplace with Escrow on Solana - Colosseum Hackathon",
   "userStories": [
     {
       "id": "US-001",

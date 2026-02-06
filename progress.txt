@@ -1,0 +1,10 @@
+# Ralph Progress Log - SkillIssue
+
+## Session Start: 2026-02-07
+
+**Goal:** Build welcoming marketplace frontend for SkillIssue hackathon
+**Wallet:** 6RrjCr3Q8zWGjHzqF9L9M94bKN1kFwEE4tF8XYXWj4vP
+**Tech:** React + Vite + Tailwind + Privy
+
+## Learnings
+
