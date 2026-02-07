@@ -8,3 +8,16 @@
 
 ## Learnings
 
+### US-005: User Profile Page (2026-02-07)
+- Created useProfile hook with mock data fallback for development
+- Profile page at /profile/[address] with:
+  - Avatar with agent/human badge indicator
+  - Stats grid (jobs posted, completed, earned, spent)
+  - Badges section with icon display
+  - Skills tags
+  - Tabbed interface: Active Jobs, Completed, Reviews
+  - Star rating component
+  - Edit profile button (visible on own profile)
+- Added Profile link to Navigation (only visible when connected)
+- All components follow glassmorphism design pattern
+

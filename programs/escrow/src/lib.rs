@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
-declare_id!("SK1LL1ssueEscrow1111111111111111111111111111");
+declare_id!("4UCURsRhmvhjaAaHLryWV1Zb4yv5YRo7W8A7ZyXrkUER");
 
 /// Maximum number of oracle members
 pub const MAX_ORACLES: usize = 5;
@@ -176,14 +176,15 @@ pub mod skill_issue_escrow {
         let seeds = &[b"escrow", &job_id_bytes[..], &[ctx.bumps.escrow]];
         let signer = &[&seeds[..]];
         
+        let cpi_program = ctx.accounts.token_program.to_account_info();
+        
         // Transfer 95% to worker
         let cpi_accounts = Transfer {
             from: ctx.accounts.escrow_token_account.to_account_info(),
             to: ctx.accounts.worker_token_account.to_account_info(),
             authority: escrow.to_account_info(),
         };
-        let cpi_program = ctx.accounts.token_program.to_account_info();
-        let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
+        let cpi_ctx = CpiContext::new_with_signer(cpi_program.clone(), cpi_accounts, signer);
         token::transfer(cpi_ctx, worker_amount)?;
         
         // Transfer 4% to platform treasury
@@ -192,7 +193,7 @@ pub mod skill_issue_escrow {
             to: ctx.accounts.treasury_token_account.to_account_info(),
             authority: escrow.to_account_info(),
         };
-        let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
+        let cpi_ctx = CpiContext::new_with_signer(cpi_program.clone(), cpi_accounts, signer);
         token::transfer(cpi_ctx, platform_amount)?;
         
         // Transfer 1% to juror pool
@@ -249,7 +250,8 @@ pub mod skill_issue_escrow {
             total
         };
         
-        let seeds = &[b"escrow", &job_id.to_le_bytes()[..], &[ctx.bumps.escrow]];
+        let job_id_bytes = job_id.to_le_bytes();
+        let seeds = &[b"escrow", &job_id_bytes[..], &[ctx.bumps.escrow]];
         let signer = &[&seeds[..]];
         
         let cpi_program = ctx.accounts.token_program.to_account_info();
@@ -364,7 +366,7 @@ pub struct InitializeEscrow<'info> {
         init,
         payer = poster,
         space = 8 + Escrow::SIZE,
-        seeds = [b"escrow", &job_id.to_le_bytes()],
+        seeds = [b"escrow", &job_id.to_le_bytes()[..]],
         bump
     )]
     pub escrow: Account<'info, Escrow>,
@@ -380,7 +382,7 @@ pub struct Deposit<'info> {
     
     #[account(
         mut,
-        seeds = [b"escrow", &job_id.to_le_bytes()],
+        seeds = [b"escrow", &job_id.to_le_bytes()[..]],
         bump,
         constraint = escrow.poster == poster.key(),
     )]
@@ -398,7 +400,7 @@ pub struct Deposit<'info> {
         payer = poster,
         token::mint = usdc_mint,
         token::authority = escrow,
-        seeds = [b"escrow_token", &job_id.to_le_bytes()],
+        seeds = [b"escrow_token", &job_id.to_le_bytes()[..]],
         bump,
     )]
     pub escrow_token_account: Account<'info, TokenAccount>,
@@ -418,7 +420,7 @@ pub struct OracleAction<'info> {
     
     #[account(
         mut,
-        seeds = [b"escrow", &job_id.to_le_bytes()],
+        seeds = [b"escrow", &job_id.to_le_bytes()[..]],
         bump,
     )]
     pub escrow: Account<'info, Escrow>,
@@ -432,14 +434,14 @@ pub struct ExecuteRelease<'info> {
     
     #[account(
         mut,
-        seeds = [b"escrow", &job_id.to_le_bytes()],
+        seeds = [b"escrow", &job_id.to_le_bytes()[..]],
         bump,
     )]
     pub escrow: Account<'info, Escrow>,
     
     #[account(
         mut,
-        seeds = [b"escrow_token", &job_id.to_le_bytes()],
+        seeds = [b"escrow_token", &job_id.to_le_bytes()[..]],
         bump,
     )]
     pub escrow_token_account: Account<'info, TokenAccount>,
@@ -474,14 +476,14 @@ pub struct ExecuteRefund<'info> {
     
     #[account(
         mut,
-        seeds = [b"escrow", &job_id.to_le_bytes()],
+        seeds = [b"escrow", &job_id.to_le_bytes()[..]],
         bump,
     )]
     pub escrow: Account<'info, Escrow>,
     
     #[account(
         mut,
-        seeds = [b"escrow_token", &job_id.to_le_bytes()],
+        seeds = [b"escrow_token", &job_id.to_le_bytes()[..]],
         bump,
     )]
     pub escrow_token_account: Account<'info, TokenAccount>,
@@ -516,7 +518,7 @@ pub struct InitiateDispute<'info> {
     
     #[account(
         mut,
-        seeds = [b"escrow", &job_id.to_le_bytes()],
+        seeds = [b"escrow", &job_id.to_le_bytes()[..]],
         bump,
     )]
     pub escrow: Account<'info, Escrow>,
@@ -530,7 +532,7 @@ pub struct VoteDispute<'info> {
     
     #[account(
         mut,
-        seeds = [b"escrow", &job_id.to_le_bytes()],
+        seeds = [b"escrow", &job_id.to_le_bytes()[..]],
         bump,
     )]
     pub escrow: Account<'info, Escrow>,

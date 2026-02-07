@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useWallet } from '../hooks/useWallet';
+import { ConnectButton } from '../components/ConnectButton';
 import { useJobs, Job } from '../hooks/useJobs';
 
 const flowTypes = [
@@ -135,7 +135,7 @@ export default function Home() {
             </div>
 
             <div className="flex items-center gap-4">
-              <WalletMultiButton className="!bg-gradient-to-r !from-[#6B4EE6] !to-[#5B3FD6] hover:!from-[#7B5EF6] hover:!to-[#6B4EE6] !rounded-xl !h-10 !px-5 !font-medium !text-sm" />
+              <ConnectButton size="sm" />
             </div>
           </div>
         </div>
@@ -340,7 +340,7 @@ export default function Home() {
           </p>
 
           {!connected ? (
-            <WalletMultiButton className="!bg-gradient-to-r !from-[#6B4EE6] !to-[#5B3FD6] hover:!from-[#7B5EF6] hover:!to-[#6B4EE6] !rounded-xl !h-14 !px-10 !font-semibold !text-base !shadow-lg !shadow-[#6B4EE6]/25" />
+            <ConnectButton size="lg" />
           ) : (
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link

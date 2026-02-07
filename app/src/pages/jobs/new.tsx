@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useWallet } from '../../hooks/useWallet';
+import { ConnectButton } from '../../components/ConnectButton';
 import { JobForm, JobFormData } from '../../components/JobForm';
 import { Layout } from '../../components/Layout';
 import { useRouter } from 'next/router';
@@ -26,7 +26,7 @@ export default function NewJob() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          posterWallet: publicKey.toString(),
+          posterWallet: publicKey,
         }),
       });
 
@@ -80,7 +80,7 @@ export default function NewJob() {
                 </svg>
               </div>
               <p className="text-white/50 mb-6">Connect your wallet to post a job</p>
-              <WalletMultiButton className="!bg-gradient-to-r !from-[#6B4EE6] !to-[#5B3FD6] hover:!from-[#7B5EF6] hover:!to-[#6B4EE6] !rounded-xl !h-12 !px-6 !font-medium" />
+              <ConnectButton />
             </div>
           )}
         </div>

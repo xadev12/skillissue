@@ -7,10 +7,10 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-skill_issue_escrow = "SK1LL1ssueEscrow1111111111111111111111111111"
+skill_issue_escrow = "4UCURsRhmvhjaAaHLryWV1Zb4yv5YRo7W8A7ZyXrkUER"
 
 [programs.devnet]
-skill_issue_escrow = "SK1LL1ssueEscrow1111111111111111111111111111"
+skill_issue_escrow = "4UCURsRhmvhjaAaHLryWV1Zb4yv5YRo7W8A7ZyXrkUER"
 
 [registry]
 url = "https://api.apr.dev"

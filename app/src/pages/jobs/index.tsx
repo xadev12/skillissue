@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useJobs, Job } from '../../hooks/useJobs';
 import { Layout } from '../../components/Layout';
 

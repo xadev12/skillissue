@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useWallet } from '../../hooks/useWallet';
+import { ConnectButton } from '../../components/ConnectButton';
 import { useJob } from '../../hooks/useJobs';
 import { Layout } from '../../components/Layout';
 import { useState } from 'react';
@@ -15,15 +15,15 @@ export default function JobDetail() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const isPoster = !!(job && publicKey && job.poster.walletAddress === publicKey.toString());
-  const isWorker = !!(job && publicKey && job.worker?.walletAddress === publicKey.toString());
+  const isPoster = !!(job && publicKey && job.poster.walletAddress === publicKey);
+  const isWorker = !!(job && publicKey && job.worker?.walletAddress === publicKey);
 
   const handleAccept = async () => {
     if (!publicKey) return;
     setIsSubmitting(true);
     setActionError(null);
     try {
-      await acceptJob(publicKey.toString());
+      await acceptJob(publicKey);
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Failed to accept job');
     } finally {
@@ -50,7 +50,7 @@ export default function JobDetail() {
     setIsSubmitting(true);
     setActionError(null);
     try {
-      await approveWork(publicKey.toString());
+      await approveWork(publicKey);
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Failed to approve work');
     } finally {
@@ -255,7 +255,7 @@ export default function JobDetail() {
               ) : (
                 <div className="text-center">
                   <p className="text-white/50 mb-4">Connect your wallet to accept this job</p>
-                  <WalletMultiButton className="!bg-gradient-to-r !from-[#6B4EE6] !to-[#5B3FD6] hover:!from-[#7B5EF6] hover:!to-[#6B4EE6] !rounded-xl !h-12 !px-6 !font-medium" />
+                  <ConnectButton />
                 </div>
               )}
               {!isPoster && connected && (
