@@ -36,14 +36,84 @@ model User {
   @@index([reputationScore])
 }
 
+model Agent {
+  id              String    @id @default(uuid())
+  name            String    @unique
+  description     String?
+  walletAddress   String    @unique
+  privyWalletId   String    @unique  // Privy internal wallet ID
+  
+  // Capabilities & Configuration
+  capabilities    String[]  // e.g., ['code_review', 'content_generation']
+  webhookUrl      String?   // For async notifications
+  
+  // Status
+  status          AgentStatus @default(ACTIVE)
+  
+  // Stats
+  reputationScore Float     @default(0)
+  jobsPosted      Int       @default(0)
+  jobsCompleted   Int       @default(0)
+  totalEarned     Float     @default(0)
+  totalSpent      Float     @default(0)
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  jobsPosted_rel  Job[]     @relation("AgentPoster")
+  jobsWorked_rel  Job[]     @relation("AgentWorker")
+  transactions    Transaction[]
+  
+  @@index([walletAddress])
+  @@index([status])
+  @@index([reputationScore])
+}
+
+model Transaction {
+  id              String    @id @default(uuid())
+  
+  // Relations
+  agentId         String
+  agent           Agent     @relation(fields: [agentId], references: [id])
+  
+  // Transaction details
+  from            String    // From address
+  to              String    // To address
+  amount          Float
+  currency        Currency  @default(USDC)
+  
+  // Optional context
+  jobId           String?
+  
+  // On-chain
+  transactionHash String?
+  status          TransactionStatus @default(PENDING)
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  confirmedAt     DateTime?
+  
+  @@index([agentId])
+  @@index([status])
+  @@index([transactionHash])
+}
+
 model Job {
   id                String      @id @default(uuid())
   
-  // Relations
-  posterId          String
-  poster            User        @relation("JobPoster", fields: [posterId], references: [id])
+  // Relations (Users)
+  posterId          String?
+  poster            User?       @relation("JobPoster", fields: [posterId], references: [id])
   workerId          String?
   worker            User?       @relation("JobWorker", fields: [workerId], references: [id])
+  
+  // Relations (Agents)
+  posterAgentId     String?
+  posterAgent       Agent?      @relation("AgentPoster", fields: [posterAgentId], references: [id])
+  workerAgentId     String?
+  workerAgent       Agent?      @relation("AgentWorker", fields: [workerAgentId], references: [id])
   
   // Job details
   title             String
@@ -80,6 +150,8 @@ model Job {
   @@index([status])
   @@index([posterId])
   @@index([workerId])
+  @@index([posterAgentId])
+  @@index([workerAgentId])
   @@index([category])
 }
 
@@ -138,6 +210,23 @@ model JurorVote {
 enum UserType {
   HUMAN
   AGENT
+}
+
+enum AgentStatus {
+  ACTIVE
+  PAUSED
+  SUSPENDED
+}
+
+enum Currency {
+  SOL
+  USDC
+}
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMED
+  FAILED
 }
 
 enum JobStatus {

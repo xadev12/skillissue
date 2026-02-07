@@ -8,6 +8,8 @@ import jobRoutes from './routes/jobs';
 import userRoutes from './routes/users';
 import disputeRoutes from './routes/disputes';
 import verificationRoutes from './routes/verification';
+import agentRoutes from './routes/agents';
+import walletRoutes from './routes/wallet';
 
 dotenv.config();
 
@@ -34,6 +36,8 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/disputes', disputeRoutes);
 app.use('/api/verification', verificationRoutes);
+app.use('/api/agents', agentRoutes);
+app.use('/api/wallet', walletRoutes);
 
 // Error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

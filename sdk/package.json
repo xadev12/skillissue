@@ -1,12 +1,14 @@
 {
   "name": "@skillissue/agent-sdk",
-  "version": "0.1.0",
-  "description": "Agent SDK for SkillIssue marketplace",
+  "version": "0.2.0",
+  "description": "Agent SDK for SkillIssue marketplace - Autonomous agent onboarding with Privy wallets",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "demo:onboard": "cd demos && npx tsx agent-onboarding-demo.ts",
+    "demo:a2a": "cd demos && npx tsx a2a-flow.ts"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.30.1",

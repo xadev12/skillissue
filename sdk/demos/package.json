@@ -1,0 +1,20 @@
+{
+  "name": "skillissue-sdk-demo",
+  "version": "1.0.0",
+  "description": "SkillIssue Agent SDK Demo - Autonomous agent onboarding with Privy",
+  "scripts": {
+    "demo:onboard": "tsx demos/agent-onboarding-demo.ts",
+    "demo:a2a": "tsx demos/a2a-flow.ts",
+    "demo:h2a": "tsx demos/h2a-flow.ts"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.91.0",
+    "@coral-xyz/anchor": "^0.30.1",
+    "@solana/spl-token": "^0.4.14",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,4 +1,4 @@
-import { Connection, PublicKey, Keypair, SystemProgram } from '@solana/web3.js';
+import { Connection, PublicKey, Keypair, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { Program, AnchorProvider, BN, Idl } from '@coral-xyz/anchor';
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
@@ -9,6 +9,80 @@ const USDC_MINT = new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU');
 
 // Backend API URL
 const API_URL = process.env.SKILLISSUE_API_URL || 'http://localhost:3001';
+
+// Privy configuration for agents
+const PRIVY_APP_ID = process.env.PRIVY_APP_ID || '';
+
+// Types
+export interface JobParams {
+  title: string;
+  description: string;
+  budget: number; // USDC amount
+  deadline: Date;
+  category?: 'CODE' | 'CONTENT' | 'PHYSICAL' | 'OTHER';
+  proofType?: 'MANUAL' | 'CODE' | 'CONTENT' | 'PHOTO';
+  location?: {
+    lat: number;
+    lng: number;
+    radius?: number;
+  };
+}
+
+export interface JobFilters {
+  status?: 'OPEN' | 'LOCKED' | 'SUBMITTED' | 'COMPLETED' | 'DISPUTED';
+  category?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface Job {
+  id: string;
+  title: string;
+  description: string;
+  budget: number;
+  status: 'OPEN' | 'LOCKED' | 'SUBMITTED' | 'COMPLETED' | 'DISPUTED';
+  category: string;
+  proofType: string;
+  deadline: string;
+  createdAt: string;
+  squadsVaultAddress: string | null;
+  poster: {
+    walletAddress: string;
+    reputationScore: number;
+  };
+  worker?: {
+    walletAddress: string;
+    reputationScore: number;
+  };
+}
+
+export interface Deliverable {
+  url: string;
+  hash?: string;
+  proofData?: Record<string, any>;
+}
+
+export interface AgentOnboardingParams {
+  name: string;
+  description?: string;
+  capabilities?: string[];
+  webhookUrl?: string;
+}
+
+export interface Agent {
+  id: string;
+  name: string;
+  description: string | null;
+  walletAddress: string;
+  capabilities: string[];
+  reputationScore: number;
+  totalEarned: number;
+  totalSpent: number;
+  jobsCompleted: number;
+  jobsPosted: number;
+  status: string;
+  createdAt: string;
+}
 
 // Minimal IDL for the escrow program
 const IDL: Idl = {
@@ -62,55 +136,6 @@ const IDL: Idl = {
   types: [],
 };
 
-// Types
-export interface JobParams {
-  title: string;
-  description: string;
-  budget: number; // USDC amount
-  deadline: Date;
-  category?: 'CODE' | 'CONTENT' | 'PHYSICAL' | 'OTHER';
-  proofType?: 'MANUAL' | 'CODE' | 'CONTENT' | 'PHOTO';
-  location?: {
-    lat: number;
-    lng: number;
-    radius?: number;
-  };
-}
-
-export interface JobFilters {
-  status?: 'OPEN' | 'LOCKED' | 'SUBMITTED' | 'COMPLETED' | 'DISPUTED';
-  category?: string;
-  page?: number;
-  limit?: number;
-}
-
-export interface Job {
-  id: string;
-  title: string;
-  description: string;
-  budget: number;
-  status: 'OPEN' | 'LOCKED' | 'SUBMITTED' | 'COMPLETED' | 'DISPUTED';
-  category: string;
-  proofType: string;
-  deadline: string;
-  createdAt: string;
-  squadsVaultAddress: string | null;
-  poster: {
-    walletAddress: string;
-    reputationScore: number;
-  };
-  worker?: {
-    walletAddress: string;
-    reputationScore: number;
-  };
-}
-
-export interface Deliverable {
-  url: string;
-  hash?: string;
-  proofData?: Record<string, any>;
-}
-
 // Get escrow PDA
 function getEscrowPDA(jobId: string): [PublicKey, number] {
   const jobIdNum = BigInt(jobId);
@@ -135,6 +160,340 @@ function getEscrowTokenPDA(jobId: string): [PublicKey, number] {
   );
 }
 
+/**
+ * SkillIssue SDK for Agents
+ * 
+ * This SDK enables AI agents to:
+ * 1. Onboard themselves with autonomous wallets (via Privy)
+ * 2. Post and accept jobs
+ * 3. Execute transactions programmatically
+ * 
+ * The breakthrough: Agents can participate in the economy without human custody.
+ */
+export class SkillIssueAgentSDK {
+  private connection: Connection;
+  private apiKey: string;
+  private agentId: string | null = null;
+  private walletAddress: string | null = null;
+
+  constructor(
+    connection: Connection,
+    apiKey: string,
+    agentId?: string
+  ) {
+    this.connection = connection;
+    this.apiKey = apiKey;
+    if (agentId) {
+      this.agentId = agentId;
+    }
+  }
+
+  /**
+   * Onboard a new agent with an autonomous wallet
+   * 
+   * This creates a server-side wallet via Privy that the agent controls.
+   * No human holds the private key. The agent can transact independently.
+   */
+  async onboard(params: AgentOnboardingParams): Promise<Agent> {
+    const response = await fetch(`${API_URL}/api/agents/onboard`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': this.apiKey,
+      },
+      body: JSON.stringify(params),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to onboard agent');
+    }
+
+    const data = await response.json();
+    this.agentId = data.agent.id;
+    this.walletAddress = data.agent.walletAddress;
+
+    console.log(`🤖 Agent onboarded: ${data.agent.name}`);
+    console.log(`💳 Wallet: ${data.agent.walletAddress}`);
+    console.log(`✨ Status: ${data.agent.status}`);
+
+    return data.agent;
+  }
+
+  /**
+   * Load an existing agent by ID
+   */
+  async loadAgent(agentId: string): Promise<Agent> {
+    const response = await fetch(`${API_URL}/api/agents/${agentId}`, {
+      headers: {
+        'X-API-Key': this.apiKey,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to load agent');
+    }
+
+    const data = await response.json();
+    this.agentId = agentId;
+    this.walletAddress = data.agent.walletAddress;
+
+    return data.agent;
+  }
+
+  /**
+   * Post a new job to the marketplace
+   * 
+   * The agent acts as the poster, using its autonomous wallet for escrow.
+   */
+  async postJob(params: JobParams): Promise<string> {
+    if (!this.agentId) {
+      throw new Error('Agent not onboarded. Call onboard() first.');
+    }
+
+    const response = await fetch(`${API_URL}/api/jobs`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': this.apiKey,
+      },
+      body: JSON.stringify({
+        ...params,
+        posterAgentId: this.agentId,
+        deadline: params.deadline.toISOString(),
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to post job');
+    }
+
+    const data = await response.json();
+    console.log(`📋 Job posted: ${data.job.title} ($${data.job.budget} USDC)`);
+    return data.job.id;
+  }
+
+  /**
+   * Find jobs with optional filters
+   */
+  async findJobs(filters?: JobFilters): Promise<Job[]> {
+    const queryParams = new URLSearchParams();
+    if (filters?.status) queryParams.set('status', filters.status);
+    if (filters?.category) queryParams.set('category', filters.category);
+    if (filters?.page) queryParams.set('page', filters.page.toString());
+    if (filters?.limit) queryParams.set('limit', filters.limit.toString());
+
+    const response = await fetch(`${API_URL}/api/jobs?${queryParams}`, {
+      headers: {
+        'X-API-Key': this.apiKey,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch jobs');
+    }
+
+    const data = await response.json();
+    return data.jobs;
+  }
+
+  /**
+   * Get a single job by ID
+   */
+  async getJob(jobId: string): Promise<Job> {
+    const response = await fetch(`${API_URL}/api/jobs/${jobId}`, {
+      headers: {
+        'X-API-Key': this.apiKey,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch job');
+    }
+
+    const data = await response.json();
+    return data.job;
+  }
+
+  /**
+   * Accept a job (become the worker)
+   * 
+   * The agent acts as the worker, ready to complete the task.
+   */
+  async acceptJob(jobId: string): Promise<void> {
+    if (!this.agentId) {
+      throw new Error('Agent not onboarded. Call onboard() first.');
+    }
+
+    const response = await fetch(`${API_URL}/api/jobs/${jobId}/accept`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': this.apiKey,
+      },
+      body: JSON.stringify({
+        workerAgentId: this.agentId,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to accept job');
+    }
+
+    console.log(`✅ Job accepted: ${jobId}`);
+  }
+
+  /**
+   * Submit work for a job
+   */
+  async submitWork(jobId: string, deliverable: Deliverable): Promise<void> {
+    const response = await fetch(`${API_URL}/api/jobs/${jobId}/submit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': this.apiKey,
+      },
+      body: JSON.stringify({
+        deliverableUrl: deliverable.url,
+        deliverableHash: deliverable.hash,
+        proofData: deliverable.proofData,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to submit work');
+    }
+
+    console.log(`📤 Work submitted for job: ${jobId}`);
+  }
+
+  /**
+   * Execute a transaction from the agent's wallet
+   * 
+   * This is the core of agentic payments - autonomous transactions.
+   */
+  async executeTransaction(
+    to: string,
+    amount: number,
+    currency: 'SOL' | 'USDC' = 'USDC',
+    jobId?: string
+  ): Promise<{ hash: string }> {
+    if (!this.agentId) {
+      throw new Error('Agent not onboarded. Call onboard() first.');
+    }
+
+    const response = await fetch(`${API_URL}/api/wallet/${this.agentId}/transaction`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': this.apiKey,
+      },
+      body: JSON.stringify({
+        to,
+        amount,
+        currency,
+        jobId,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Transaction failed');
+    }
+
+    const data = await response.json();
+    console.log(`💸 Transaction executed: ${amount} ${currency} to ${to.slice(0, 8)}...`);
+    console.log(`🔗 Hash: ${data.transaction.hash}`);
+
+    return { hash: data.transaction.hash };
+  }
+
+  /**
+   * Get agent wallet balance
+   */
+  async getBalance(): Promise<{ SOL: number; USDC: number }> {
+    if (!this.agentId) {
+      throw new Error('Agent not onboarded. Call onboard() first.');
+    }
+
+    const response = await fetch(`${API_URL}/api/wallet/${this.agentId}/balance`, {
+      headers: {
+        'X-API-Key': this.apiKey,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch balance');
+    }
+
+    const data = await response.json();
+    return data.balances;
+  }
+
+  /**
+   * Get agent details
+   */
+  async getDetails(): Promise<Agent> {
+    if (!this.agentId) {
+      throw new Error('Agent not onboarded. Call onboard() first.');
+    }
+
+    const response = await fetch(`${API_URL}/api/agents/${this.agentId}`, {
+      headers: {
+        'X-API-Key': this.apiKey,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch agent details');
+    }
+
+    const data = await response.json();
+    return data.agent;
+  }
+
+  /**
+   * Release payment from escrow (if agent is oracle/poster)
+   */
+  async releasePayment(jobId: string): Promise<void> {
+    const response = await fetch(`${API_URL}/api/jobs/${jobId}/release`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': this.apiKey,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to release payment');
+    }
+
+    console.log(`💰 Payment released for job: ${jobId}`);
+  }
+
+  /**
+   * Get the agent's wallet address
+   */
+  getWalletAddress(): string {
+    if (!this.walletAddress) {
+      throw new Error('Agent not onboarded. Call onboard() first.');
+    }
+    return this.walletAddress;
+  }
+
+  /**
+   * Check if agent is onboarded
+   */
+  isOnboarded(): boolean {
+    return this.agentId !== null && this.walletAddress !== null;
+  }
+}
+
+// Legacy SDK for human users (unchanged)
 export class SkillIssueSDK {
   private connection: Connection;
   private wallet: Keypair;
@@ -163,9 +522,6 @@ export class SkillIssueSDK {
     this.program = new Program(IDL as any, PROGRAM_ID, provider);
   }
 
-  /**
-   * Post a new job to the marketplace
-   */
   async postJob(params: JobParams): Promise<string> {
     const response = await fetch(`${API_URL}/api/jobs`, {
       method: 'POST',
@@ -186,9 +542,6 @@ export class SkillIssueSDK {
     return data.job.id;
   }
 
-  /**
-   * Find jobs with optional filters
-   */
   async findJobs(filters?: JobFilters): Promise<Job[]> {
     const queryParams = new URLSearchParams();
     if (filters?.status) queryParams.set('status', filters.status);
@@ -206,9 +559,6 @@ export class SkillIssueSDK {
     return data.jobs;
   }
 
-  /**
-   * Get a single job by ID
-   */
   async getJob(jobId: string): Promise<Job> {
     const response = await fetch(`${API_URL}/api/jobs/${jobId}`);
     
@@ -220,9 +570,6 @@ export class SkillIssueSDK {
     return data.job;
   }
 
-  /**
-   * Accept a job (become the worker)
-   */
   async acceptJob(jobId: string): Promise<void> {
     const response = await fetch(`${API_URL}/api/jobs/${jobId}/accept`, {
       method: 'POST',
@@ -238,9 +585,6 @@ export class SkillIssueSDK {
     }
   }
 
-  /**
-   * Submit work for a job
-   */
   async submitWork(jobId: string, deliverable: Deliverable): Promise<void> {
     const response = await fetch(`${API_URL}/api/jobs/${jobId}/submit`, {
       method: 'POST',
@@ -258,114 +602,10 @@ export class SkillIssueSDK {
     }
   }
 
-  /**
-   * Initialize escrow on-chain for a job
-   */
-  async initializeEscrow(
-    jobId: string,
-    amount: number,
-    worker: PublicKey,
-    deadline: Date
-  ): Promise<string> {
-    const [escrowPDA] = getEscrowPDA(jobId);
-    
-    const tx = await this.program.methods
-      .initializeEscrow(
-        new BN(jobId),
-        new BN(amount * 1_000_000), // USDC has 6 decimals
-        worker,
-        new BN(Math.floor(deadline.getTime() / 1000))
-      )
-      .accounts({
-        escrow: escrowPDA,
-        poster: this.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
-      } as any)
-      .rpc();
-    
-    return tx;
-  }
-
-  /**
-   * Deposit USDC into escrow
-   */
-  async deposit(jobId: string, amount: number): Promise<string> {
-    const [escrowPDA] = getEscrowPDA(jobId);
-    const [escrowTokenPDA] = getEscrowTokenPDA(jobId);
-    
-    const posterTokenAccount = await getAssociatedTokenAddress(
-      USDC_MINT,
-      this.wallet.publicKey
-    );
-    
-    const tx = await this.program.methods
-      .deposit(new BN(jobId), new BN(amount * 1_000_000))
-      .accounts({
-        escrow: escrowPDA,
-        poster: this.wallet.publicKey,
-        posterTokenAccount,
-        escrowTokenAccount: escrowTokenPDA,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      } as any)
-      .rpc();
-    
-    return tx;
-  }
-
-  /**
-   * Release payment from escrow (oracle only)
-   */
-  async releasePayment(jobId: string): Promise<string> {
-    const [escrowPDA] = getEscrowPDA(jobId);
-    const [escrowTokenPDA] = getEscrowTokenPDA(jobId);
-    
-    // Get job details to find worker
-    const job = await this.getJob(jobId);
-    if (!job.worker) {
-      throw new Error('No worker assigned to job');
-    }
-    
-    const worker = new PublicKey(job.worker.walletAddress);
-    const workerTokenAccount = await getAssociatedTokenAddress(USDC_MINT, worker);
-    
-    // Platform and juror accounts (from env or defaults)
-    const platformWallet = new PublicKey(
-      process.env.PLATFORM_WALLET || this.wallet.publicKey
-    );
-    const jurorPoolWallet = new PublicKey(
-      process.env.JUROR_POOL_WALLET || this.wallet.publicKey
-    );
-    
-    const platformTokenAccount = await getAssociatedTokenAddress(USDC_MINT, platformWallet);
-    const jurorPoolTokenAccount = await getAssociatedTokenAddress(USDC_MINT, jurorPoolWallet);
-    
-    const tx = await this.program.methods
-      .releasePayment(new BN(jobId))
-      .accounts({
-        escrow: escrowPDA,
-        oracle: this.wallet.publicKey,
-        worker,
-        escrowTokenAccount: escrowTokenPDA,
-        workerTokenAccount,
-        platformTokenAccount,
-        jurorPoolTokenAccount,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      } as any)
-      .rpc();
-    
-    return tx;
-  }
-
-  /**
-   * Get wallet public key
-   */
   getPublicKey(): PublicKey {
     return this.wallet.publicKey;
   }
 
-  /**
-   * Request airdrop (devnet only)
-   */
   async requestAirdrop(lamports: number = 1_000_000_000): Promise<string> {
     const signature = await this.connection.requestAirdrop(
       this.wallet.publicKey,
@@ -376,12 +616,11 @@ export class SkillIssueSDK {
   }
 }
 
-// Utility function to create a new keypair
+// Utility functions
 export function createKeypair(): Keypair {
   return Keypair.generate();
 }
 
-// Utility function to load keypair from base64 secret key
 export function loadKeypair(secretKeyBase64: string): Keypair {
   return Keypair.fromSecretKey(Buffer.from(secretKeyBase64, 'base64'));
 }
