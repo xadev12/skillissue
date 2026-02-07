@@ -4,7 +4,7 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import * as anchor from '@coral-xyz/anchor';
 
 // Program ID from Anchor.toml
-const PROGRAM_ID = new PublicKey('SK1LL1ssueEscrow1111111111111111111111111111');
+const PROGRAM_ID = new PublicKey('8uifDvyerwvrpvjbKsf82SqvYH1YvCoAcbLzNq52TFcr');
 // USDC devnet mint
 const USDC_MINT = new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU');
 

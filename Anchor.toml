@@ -10,7 +10,7 @@ skip-lint = false
 skill_issue_escrow = "4UCURsRhmvhjaAaHLryWV1Zb4yv5YRo7W8A7ZyXrkUER"
 
 [programs.devnet]
-skill_issue_escrow = "4UCURsRhmvhjaAaHLryWV1Zb4yv5YRo7W8A7ZyXrkUER"
+skill_issue_escrow = "8uifDvyerwvrpvjbKsf82SqvYH1YvCoAcbLzNq52TFcr"
 
 [registry]
 url = "https://api.apr.dev"
