@@ -1,117 +1,75 @@
 # SkillIssue Launch Assessment
 
-## Current State: DEMO-WARE
+## Current Status: READY TO DEPLOY (Blocked: SOL Faucet)
 
-The product LOOKS complete but has NO real on-chain functionality.
+The product is **built and ready to deploy** - we're just waiting for devnet SOL.
 
-### What Actually Works
-- ✅ Frontend UI (glassmorphism, responsive)
-- ✅ Backend API structure
-- ✅ Jobs CRUD (saves to Postgres)
-- ✅ User/Agent models
-- ✅ Privy SDK integration (code written, not configured)
+### ✅ What's Done
 
-### What's FAKE/MOCK
-- ❌ Solana program NOT deployed
-- ❌ Escrow doesn't actually hold funds
-- ❌ USDC never moves on-chain
-- ❌ Agent wallets not created (no Privy credentials)
-- ❌ No real economic activity
+| Component | Status |
+|-----------|--------|
+| Solana Program | ✅ Compiled (.so ready) |
+| Backend API | ✅ Agent onboarding, wallet routes |
+| Frontend UI | ✅ Complete marketplace |
+| Privy Integration | ✅ Credentials configured |
+| Database Schema | ✅ Prisma schema with Agent model |
 
----
+### ⏳ What's Blocked
 
-## To Ship a Real Product
+| Component | Blocker |
+|-----------|---------|
+| Program Deployment | ❌ Need 3 SOL from faucet |
 
-### Option 1: Quick MVP (2-3 hours)
-**Goal:** Working A2A escrow on devnet
+### 🚰 SOL Faucet Status
 
-**Tasks:**
-1. Deploy Solana program to devnet (~30 min)
-   ```bash
-   cd programs/escrow
-   anchor build
-   anchor deploy --provider.cluster devnet
-   ```
+**All faucets are currently rate-limited or dry.**
 
-2. Get Privy credentials (~15 min)
-   - Sign up at privy.io
-   - Create app
-   - Get APP_ID and APP_SECRET
+Try these alternatives:
+1. **https://faucet.solana.com/** - Web faucet (check if working)
+2. **Discord**: https://discord.gg/solana - #developer-support
+3. **Wait 1-2 hours** and try `solana airdrop 3` again
 
-3. Run database migrations (~10 min)
-   ```bash
-   cd backend
-   npx prisma migrate dev
-   ```
+### Quick Deploy (Once you have SOL)
 
-4. Configure environment variables (~15 min)
-   - Oracle wallet keypair
-   - Platform wallet
-   - Privy credentials
+```bash
+./scripts/deploy-program.sh
+```
 
-5. Test end-to-end flow (~60 min)
-   - Agent 1 posts job
-   - Escrow actually holds USDC
-   - Agent 2 accepts/completes
-   - Payment releases on-chain
+### Manual Deploy
 
-**Result:** Real working product on devnet. Can demo live transactions.
+```bash
+# 1. Get SOL
+solana airdrop 3
 
----
+# 2. Deploy
+solana program deploy \
+    programs/escrow/target/sbpf-solana-solana/release/skill_issue_escrow.so \
+    --keypair programs/escrow/target/deploy/skill_issue_escrow-keypair.json
+```
 
-### Option 2: Viral Launch (1-2 days)
-**Goal:** Mainnet-ready with real value
+### Test Flow (After Deploy)
 
-**Additional tasks:**
-1. Security audit of escrow program ($5K-10K or skip for MVP)
-2. Mainnet deployment (real SOL cost)
-3. Frontend hosting (Vercel)
-4. Backend hosting (Railway/Render)
-5. USDC faucet for new agents (faucet service)
-6. Onboarding flow polish
-7. First 10 real jobs (get friends/agents to participate)
+```bash
+# 1. Setup backend
+cd backend
+cp .env.example .env
+# Edit .env with oracle keypair
 
-**Result:** Live product anyone can use.
+# 2. Migrate DB
+npx prisma migrate dev --name init
 
----
+# 3. Start backend
+npm run dev
 
-### Option 3: Hackathon Demo (current state)
-**Goal:** Win hackathon with working demo
+# 4. Setup frontend (new terminal)
+cd app
+cp .env.local.example .env.local
+npm run dev
 
-**What we have:**
-- ✅ Polished UI
-- ✅ Conceptually correct architecture
-- ✅ Privy integration (new/cool)
-- ✅ Demo script that works with mock data
-
-**Missing:**
-- ❌ Real on-chain transactions
-
-**Hackathon strategy:**
-1. Demo the mock version
-2. Show the deployed program ID (even if just deployed)
-3. Run `solana confirm -v <tx>` to show real transaction
-4. Focus on Privy agent onboarding story
-
----
-
-## My Recommendation
-
-**Ship Option 1 (Devnet MVP) in the next 3 hours.**
-
-Why:
-1. You want a viral product, not a hackathon demo
-2. Real transactions = real learning
-3. Can iterate on real user feedback
-4. Devnet is free to experiment
-5. Can graduate to mainnet once traction proven
-
-**Blockers I need from you:**
-1. Privy app credentials (APP_ID, APP_SECRET)
-2. 30 minutes of your time to deploy the program
-3. Decision: do we ship devnet MVP or polish hackathon demo?
-
----
+# 5. Run demo (new terminal)
+cd sdk
+npm run demo:onboard
+```
 
 ## Files Changed/Added
 
